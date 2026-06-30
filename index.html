@@ -1886,7 +1886,31 @@
                 try {
                     supabaseClient = supabase.createClient(url, anonKey);
                     console.log('🔗 Supabase connected');
-                    // checkSession เรียกจาก .then() ด้านล่างแล้ว ไม่ต้องเรียกซ้ำ
+
+                    // ✅ ฟัง auth state changes (สำคัญสำหรับ OAuth callback)
+                    supabaseClient.auth.onAuthStateChange((event, session) => {
+                        console.log('🔐 Auth event:', event);
+                        if (event === 'SIGNED_IN' && session?.user) {
+                            currentUserId = session.user.id;
+                            const name = session.user.user_metadata?.full_name
+                                        || session.user.user_metadata?.name
+                                        || session.user.email?.split('@')[0];
+                            updateUIForLoggedIn({
+                                id: session.user.id,
+                                name: name,
+                                email: session.user.email
+                            });
+                            showToast('เข้าสู่ระบบสำเร็จ! 👋');
+
+                            // ล้าง URL hash ถ้ายังมีอยู่
+                            if (window.location.hash.includes('access_token')) {
+                                window.history.replaceState(null, '', window.location.pathname);
+                            }
+                        } else if (event === 'SIGNED_OUT') {
+                            document.getElementById('userInfo').classList.remove('show');
+                            document.getElementById('loginBtn').style.display = 'inline-flex';
+                        }
+                    });
                 } catch (e) {
                     console.warn('⚠️ Supabase init failed, using localStorage:', e.message);
                 }
@@ -2511,51 +2535,65 @@
             if (hash && hash.includes('access_token')) {
                 showToast('กำลังเข้าสู่ระบบด้วย Google...', 'info');
 
-                // ให้ Supabase client จัดการ session จาก URL hash
                 if (supabaseClient) {
-                    try {
-                        // ถ้า getSession ไม่ได้ session (เพราะ hash อาจถูก consume แล้ว)
-                        // ให้ลอง parse hash เพื่อ setSession โดยตรง
-                        let session = null;
+                    // ✅ ลองหลายครั้ง เพราะ Supabase client อาจยัง init ไม่เสร็จ
+                    for (let attempt = 1; attempt <= 5; attempt++) {
+                        try {
+                            let session = null;
 
-                        const { data, error } = await supabaseClient.auth.getSession();
-                        if (!error && data?.session) {
-                            session = data.session;
-                        } else {
-                            // Manual fallback: parse hash → setSession
-                            const params = new URLSearchParams(hash.replace('#', '?'));
-                            const accessToken = params.get('access_token');
-                            const refreshToken = params.get('refresh_token');
-                            if (accessToken) {
-                                const { data: setData, error: setError } = await supabaseClient.auth.setSession({
-                                    access_token: accessToken,
-                                    refresh_token: refreshToken || ''
-                                });
-                                if (!setError && setData?.session) {
-                                    session = setData.session;
+                            const { data, error } = await supabaseClient.auth.getSession();
+                            if (!error && data?.session) {
+                                session = data.session;
+                            } else {
+                                // Manual fallback: parse hash → setSession
+                                const params = new URLSearchParams(hash.replace('#', '?'));
+                                const accessToken = params.get('access_token');
+                                const refreshToken = params.get('refresh_token');
+                                if (accessToken) {
+                                    const { data: setData, error: setError } = await supabaseClient.auth.setSession({
+                                        access_token: accessToken,
+                                        refresh_token: refreshToken || ''
+                                    });
+                                    if (!setError && setData?.session) {
+                                        session = setData.session;
+                                    }
                                 }
                             }
-                        }
 
-                        if (session?.user) {
-                            currentUserId = session.user.id;
-                            const name = session.user.user_metadata?.full_name
-                                        || session.user.user_metadata?.name
-                                        || session.user.email?.split('@')[0];
-                            updateUIForLoggedIn({
-                                id: session.user.id,
-                                name: name,
-                                email: session.user.email
-                            });
-                            showToast('เข้าสู่ระบบด้วย Google สำเร็จ! 👋');
+                            if (session?.user) {
+                                currentUserId = session.user.id;
+                                const name = session.user.user_metadata?.full_name
+                                            || session.user.user_metadata?.name
+                                            || session.user.email?.split('@')[0];
+                                updateUIForLoggedIn({
+                                    id: session.user.id,
+                                    name: name,
+                                    email: session.user.email
+                                });
+                                showToast('เข้าสู่ระบบด้วย Google สำเร็จ! 👋');
 
-                            // ✅ ล้าง URL hash ให้สะอาด
-                            window.history.replaceState(null, '', window.location.pathname);
-                            return;
+                                // ✅ ล้าง URL hash ให้สะอาด
+                                window.history.replaceState(null, '', window.location.pathname);
+                                return;
+                            }
+
+                            // ยังไม่ได้ session → รอแล้วลองใหม่
+                            if (attempt < 5) {
+                                console.log(`⏳ OAuth attempt ${attempt}: no session yet, retrying in ${attempt}s...`);
+                                await new Promise(r => setTimeout(r, attempt * 500));
+                            }
+                        } catch (e) {
+                            console.warn(`OAuth attempt ${attempt} error:`, e.message);
+                            if (attempt < 5) {
+                                await new Promise(r => setTimeout(r, attempt * 500));
+                            }
                         }
-                    } catch (e) {
-                        console.warn('OAuth callback processing error:', e.message);
                     }
+
+                    // ❌ ลอง 5 ครั้งแล้วยังไม่ได้ session
+                    showToast('ล็อคอินไม่สำเร็จ กรุณาลองใหม่', 'error');
+                    window.history.replaceState(null, '', window.location.pathname);
+                    return;
                 }
             }
 
