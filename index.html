@@ -2475,10 +2475,12 @@
                 return;
             }
             try {
+                // ใช้ production URL เสมอ (ไม่ใช่ localhost)
+                const productionUrl = 'https://thaiapp-market.vercel.app';
                 const { data, error } = await supabaseClient.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
-                        redirectTo: window.location.origin + window.location.pathname
+                        redirectTo: productionUrl
                     }
                 });
                 if (error) {
