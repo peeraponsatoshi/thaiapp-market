@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   name TEXT,
   phone TEXT,
   email TEXT,
+  role TEXT DEFAULT 'user',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -104,9 +105,35 @@ CREATE POLICY "users can read own orders"
   ON orders FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "admin can update order status" ON orders;
+CREATE POLICY "admin can update order status"
+  ON orders FOR UPDATE
+  USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+
+-- ============================================================
+-- ADMIN: PRODUCTS MANAGEMENT
+-- ============================================================
+
+-- Admin can insert products
+DROP POLICY IF EXISTS "admin can insert products" ON products;
+CREATE POLICY "admin can insert products"
+  ON products FOR INSERT
+  WITH CHECK (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+
+-- Admin can update products
+DROP POLICY IF EXISTS "admin can update products" ON products;
+CREATE POLICY "admin can update products"
+  ON products FOR UPDATE
+  USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+
+-- Admin can delete products
+DROP POLICY IF EXISTS "admin can delete products" ON products;
+CREATE POLICY "admin can delete products"
+  ON products FOR DELETE
+  USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+
 -- ============================================================
 -- AUTO-CREATE PROFILE ON SIGN UP (Trigger)
--- ============================================================
 
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$

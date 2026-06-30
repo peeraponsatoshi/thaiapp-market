@@ -1387,6 +1387,35 @@
             .hero-buttons { flex-direction: column; align-items: center; }
             .nav-logo span { font-size: 1.1rem; }
         }
+    
+        .admin-btn { background:var(--crimson);color:white;border:none;padding:6px 14px;border-radius:50px;font-family:var(--font-body);font-size:.8rem;font-weight:600;cursor:pointer;transition:var(--transition);display:none;align-items:center;gap:6px; }
+        .admin-btn:hover { background:var(--crimson-dark);transform:scale(1.05); }
+        .admin-btn.show { display:inline-flex; }
+        .admin-modal .modal { max-width:900px !important;width:95%; }
+        .admin-tabs { display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid var(--cream-dark);padding-bottom:0; }
+        .admin-tab { padding:10px 24px;border:none;background:none;font-family:var(--font-heading);font-size:.95rem;font-weight:500;color:var(--text-muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:var(--transition); }
+        .admin-tab:hover { color:var(--navy); }
+        .admin-tab.active { color:var(--crimson);border-bottom-color:var(--crimson); }
+        .admin-table { width:100%;border-collapse:collapse;font-size:.9rem; }
+        .admin-table th { text-align:left;padding:10px 12px;background:var(--cream);font-family:var(--font-heading);font-weight:600;color:var(--navy);font-size:.85rem; }
+        .admin-table td { padding:10px 12px;border-bottom:1px solid var(--cream);color:var(--text-dark);vertical-align:middle; }
+        .admin-table tr:hover td { background:rgba(212,160,23,.03); }
+        .admin-status { display:inline-block;padding:3px 12px;border-radius:50px;font-size:.75rem;font-weight:600; }
+        .admin-status.pending { background:#fef3c7;color:#92400e; }
+        .admin-status.paid { background:#d1fae5;color:#065f46; }
+        .admin-status.completed { background:#dbeafe;color:#1e40af; }
+        .admin-status.cancelled { background:#fee2e2;color:#991b1b; }
+        .admin-table select { padding:4px 8px;border:1px solid var(--cream-dark);border-radius:6px;font-family:var(--font-body);font-size:.85rem;background:white;cursor:pointer; }
+        .admin-table select:focus { outline:none;border-color:var(--gold); }
+        .admin-empty { text-align:center;padding:40px;color:var(--text-muted); }
+        .admin-empty i { font-size:2.5rem;margin-bottom:12px;opacity:.4; }
+        .admin-toolbar { display:flex;justify-content:space-between;align-items:center;margin-bottom:16px; }
+        .admin-toolbar h3 { font-family:var(--font-heading);font-weight:600;color:var(--navy); }
+        .admin-thumb { width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:1rem; }
+        .product-form-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+        .product-form-grid .full-width { grid-column:1 / -1; }
+        @media (max-width:768px) { .admin-modal .modal { max-width:100% !important;padding:20px 16px; } .admin-table { font-size:.8rem; } .admin-table th,.admin-table td { padding:8px 6px; } .product-form-grid { grid-template-columns:1fr; } }
+
     </style>
 </head>
 <body>
@@ -1423,6 +1452,9 @@
                 <span id="userName">ผู้ใช้</span>
                 <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button>
             </div>
+            <button class="admin-btn" id="adminBtn" onclick="openAdminPanel()">
+                <i class="fas fa-cog"></i> จัดการระบบ
+            </button>
             <button class="hamburger" id="hamburger" aria-label="เมนู">
                 <span></span><span></span><span></span>
             </button>
@@ -1806,6 +1838,67 @@
         </div>
     </div>
 
+
+    <!-- ADMIN MODAL -->
+    <div class="modal-overlay admin-modal" id="adminModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeAdminPanel()">&times;</button>
+            <div class="modal-header-deco">
+                <span class="deco-line"></span>
+                <span class="deco-icon"><i class="fas fa-cog"></i></span>
+                <span class="deco-line"></span>
+            </div>
+            <h2>จัดการระบบ</h2>
+            <p class="modal-sub">จัดการสินค้าและออเดอร์</p>
+
+            <div class="admin-tabs">
+                <button class="admin-tab active" onclick="switchAdminTab('products')"><i class="fas fa-box"></i> สินค้า</button>
+                <button class="admin-tab" onclick="switchAdminTab('orders')"><i class="fas fa-receipt"></i> ออเดอร์</button>
+            </div>
+
+            <div id="adminProductsTab">
+                <div class="admin-toolbar">
+                    <h3>รายการสินค้า</h3>
+                    <button class="btn btn-primary btn-sm" onclick="showProductForm(null)"><i class="fas fa-plus"></i> เพิ่มสินค้า</button>
+                </div>
+                <div id="adminProductsContainer"><div class="admin-empty"><i class="fas fa-box-open"></i><p>กำลังโหลด...</p></div></div>
+            </div>
+
+            <div id="adminOrdersTab" style="display:none;">
+                <div class="admin-toolbar"><h3>รายการออเดอร์</h3></div>
+                <div id="adminOrdersContainer"><div class="admin-empty"><i class="fas fa-receipt"></i><p>กำลังโหลด...</p></div></div>
+            </div>
+
+            <div id="adminProductForm" style="display:none;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+                    <button class="btn btn-sm" style="background:none;border:1px solid var(--cream-dark);padding:6px 12px;" onclick="cancelProductForm()"><i class="fas fa-arrow-left"></i> กลับ</button>
+                    <h3 style="font-family:var(--font-heading);font-weight:600;color:var(--navy);" id="productFormTitle">เพิ่มสินค้าใหม่</h3>
+                </div>
+                <div class="product-form-grid">
+                    <div class="form-group"><label>ชื่อสินค้า</label><input type="text" id="pfName" placeholder="ชื่อสินค้า"></div>
+                    <div class="form-group"><label>หมวดหมู่</label>
+                        <select id="pfCategory">
+                            <option value="tts">TTS / เสียง</option>
+                            <option value="video">ตัดต่อคลิป</option>
+                            <option value="ai">AI ทั่วไป</option>
+                            <option value="subtitle">ทำซับไตเติล</option>
+                            <option value="tiktok">คลิป TikTok</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><label>ราคา (บาท)</label><input type="number" id="pfPrice" placeholder="ราคา" min="0"></div>
+                    <div class="form-group"><label>Emoji Icon</label><input type="text" id="pfIcon" placeholder="เช่น"></div>
+                    <div class="form-group"><label>Gradient</label><input type="text" id="pfIconBg" placeholder="linear-gradient(...)"></div>
+                    <div class="form-group"><label>Rating</label><input type="number" id="pfRating" placeholder="4.8" step="0.1" min="0" max="5"></div>
+                    <div class="form-group full-width"><label>รายละเอียด</label><textarea id="pfDesc" placeholder="รายละเอียดสินค้า"></textarea></div>
+                </div>
+                <div style="display:flex;gap:10px;margin-top:8px;">
+                    <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="saveProduct()"><i class="fas fa-save"></i> บันทึก</button>
+                    <button class="btn btn-secondary" style="flex:1;justify-content:center;border:1px solid var(--cream-dark);color:var(--text-muted);" onclick="cancelProductForm()">ยกเลิก</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ============================================================
     CART PANEL
     ============================================================ -->
@@ -1888,7 +1981,7 @@
 		                    user_metadata: payload.user_metadata || {},
 		                    app_metadata: payload.app_metadata || {},
 		                    aud: payload.aud || 'authenticated',
-		                    role: payload.role || 'authenticated',
+		                    role: 'user',  // default role (loaded from profiles later)
 		                };
 
 		                const session = {
@@ -2304,23 +2397,26 @@
                         try {
                             const { data: profile } = await supabaseClient
                                 .from('profiles')
-                                .select('name, phone')
+                                .select('name, phone, role')
                                 .eq('id', session.user.id)
                                 .single();
                             if (profile) {
                                 name = profile.name;
                                 phone = profile.phone;
                             }
+                            window._currentUserRole = profile?.role || 'user';
                         } catch (e) {
                             // ไม่มี profile → ใช้ metadata แทน
                             console.log('ℹ️ No profile found for user, using metadata');
+                            window._currentUserRole = 'user';
                         }
                         return {
                             id: session.user.id,
                             name: name || session.user.user_metadata?.full_name
                                         || session.user.user_metadata?.name
                                         || session.user.email?.split('@')[0],
-                            email: session.user.email
+                            email: session.user.email,
+                            role: window._currentUserRole
                         };
                     }
                     return null;
@@ -2455,6 +2551,14 @@
             document.getElementById('userInfo').classList.add('show');
             document.getElementById('userName').textContent = user.name;
             document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
+
+            window._currentUserRole = user.role || 'user';
+            const adminBtn = document.getElementById('adminBtn');
+            if (user.role === 'admin') {
+                adminBtn.classList.add('show');
+            } else {
+                adminBtn.classList.remove('show');
+            }
         }
 
         async function handleRegister() {
@@ -2909,6 +3013,240 @@
         }
 
         // ============================================================
+
+        // ============================================================
+        // ADMIN DASHBOARD
+        // ============================================================
+
+        function openAdminPanel() {
+            document.getElementById('adminProductsTab').style.display = 'block';
+            document.getElementById('adminOrdersTab').style.display = 'none';
+            document.querySelectorAll('.admin-tab')[0].classList.add('active');
+            document.querySelectorAll('.admin-tab')[1].classList.remove('active');
+            document.getElementById('adminProductForm').style.display = 'none';
+            openModal('adminModal');
+            renderAdminProducts();
+            renderAdminOrders();
+        }
+
+        function closeAdminPanel() {
+            closeModal('adminModal');
+        }
+
+        function switchAdminTab(tab) {
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+            if (tab === 'products') {
+                document.querySelectorAll('.admin-tab')[0].classList.add('active');
+                document.getElementById('adminProductsTab').style.display = 'block';
+                document.getElementById('adminOrdersTab').style.display = 'none';
+                renderAdminProducts();
+            } else {
+                document.querySelectorAll('.admin-tab')[1].classList.add('active');
+                document.getElementById('adminProductsTab').style.display = 'none';
+                document.getElementById('adminOrdersTab').style.display = 'block';
+                renderAdminOrders();
+            }
+        }
+
+        // --- Products --------------------------------------------------
+
+        async function renderAdminProducts() {
+            const container = document.getElementById('adminProductsContainer');
+            if (!supabaseClient) {
+                container.innerHTML = '<div class="admin-empty"><i class="fas fa-database"></i><p>Supabase \u0E44\u0E21\u0E48\u0E1E\u0E23\u0E49\u0E2D\u0E21\u0E17\u0E33\u0E07\u0E32\u0E19</p></div>';
+                return;
+            }
+            try {
+                const { data, error } = await supabaseClient.from('products').select('*').order('id');
+                if (error) throw error;
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<div class="admin-empty"><i class="fas fa-box-open"></i><p>\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E21\u0E35\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32</p></div>';
+                    return;
+                }
+                let html = '<table class="admin-table"><thead><tr><th>\u0E44\u0E2D\u0E04\u0E2D\u0E19</th><th>\u0E0A\u0E37\u0E48\u0E2D</th><th>\u0E2B\u0E21\u0E27\u0E14\u0E2B\u0E21\u0E39\u0E48</th><th>\u0E23\u0E32\u0E04\u0E32</th><th>\u0E04\u0E30\u0E41\u0E19\u0E19</th><th>\u0E22\u0E2D\u0E14\u0E19\u0E34\u0E22\u0E21</th><th>\u0E08\u0E31\u0E14\u0E01\u0E32\u0E23</th></tr></thead><tbody>';
+                data.forEach(p => {
+                    html += '<tr>' +
+                        '<td><div class="admin-thumb" style="background:' + (p.icon_bg || '#eee') + '">' + (p.icon || '\uD83D\uDCE6') + '</div></td>' +
+                        '<td><strong>' + escapeHtml(p.name) + '</strong></td>' +
+                        '<td>' + getCategoryLabel(p.category) + '</td>' +
+                        '<td>' + formatPrice(p.price) + '</td>' +
+                        '<td>' + (p.rating || '-') + '</td>' +
+                        '<td>' + (p.popular ? '\u2B50' : '-') + '</td>' +
+                        '<td style="white-space:nowrap;">' +
+                            '<button class="btn btn-sm" style="padding:4px 12px;background:var(--cream);color:var(--navy);border:none;margin-right:4px;" onclick="showProductForm(' + p.id + ')"><i class="fas fa-edit"></i></button>' +
+                            '<button class="btn btn-sm" style="padding:4px 12px;background:#fee2e2;color:#991b1b;border:none;" onclick="confirmDeleteProduct(' + p.id + ')"><i class="fas fa-trash"></i></button>' +
+                        '</td></tr>';
+                });
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (e) {
+                container.innerHTML = '<div class="admin-empty"><i class="fas fa-exclamation-triangle"></i><p>\u0E42\u0E2B\u0E25\u0E14\u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08: ' + e.message + '</p></div>';
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // --- Product Form (Add/Edit) -----------------------------------
+
+        let _editingProductId = null;
+
+        async function showProductForm(productId) {
+            _editingProductId = null;
+            document.getElementById('adminProductsTab').style.display = 'none';
+            document.getElementById('adminOrdersTab').style.display = 'none';
+            document.getElementById('adminProductForm').style.display = 'block';
+
+            if (productId) {
+                document.getElementById('productFormTitle').textContent = '\u0E41\u0E01\u0E49\u0E44\u0E02\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32';
+                try {
+                    const { data, error } = await supabaseClient.from('products').select('*').eq('id', productId).single();
+                    if (error) throw error;
+                    if (data) {
+                        _editingProductId = data.id;
+                        document.getElementById('pfName').value = data.name || '';
+                        document.getElementById('pfCategory').value = data.category || 'tts';
+                        document.getElementById('pfPrice').value = data.price || '';
+                        document.getElementById('pfIcon').value = data.icon || '';
+                        document.getElementById('pfIconBg').value = data.icon_bg || '';
+                        document.getElementById('pfRating').value = data.rating || '';
+                        document.getElementById('pfDesc').value = data.description || '';
+                    }
+                } catch (e) {
+                    showToast('\u0E42\u0E2B\u0E25\u0E14\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08', 'error');
+                    cancelProductForm();
+                }
+            } else {
+                document.getElementById('productFormTitle').textContent = '\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E43\u0E2B\u0E21\u0E48';
+                document.getElementById('pfName').value = '';
+                document.getElementById('pfCategory').value = 'tts';
+                document.getElementById('pfPrice').value = '';
+                document.getElementById('pfIcon').value = '';
+                document.getElementById('pfIconBg').value = '';
+                document.getElementById('pfRating').value = '';
+                document.getElementById('pfDesc').value = '';
+            }
+        }
+
+        function cancelProductForm() {
+            _editingProductId = null;
+            document.getElementById('adminProductForm').style.display = 'none';
+            document.getElementById('adminProductsTab').style.display = 'block';
+        }
+
+        async function saveProduct() {
+            const name = document.getElementById('pfName').value.trim();
+            const category = document.getElementById('pfCategory').value;
+            const price = parseInt(document.getElementById('pfPrice').value);
+            const icon = document.getElementById('pfIcon').value.trim();
+            const iconBg = document.getElementById('pfIconBg').value.trim();
+            const rating = parseFloat(document.getElementById('pfRating').value) || 0;
+            const description = document.getElementById('pfDesc').value.trim();
+
+            if (!name || !price) {
+                showToast('\u0E01\u0E23\u0E38\u0E13\u0E32\u0E01\u0E23\u0E2D\u0E01\u0E0A\u0E37\u0E48\u0E2D\u0E41\u0E25\u0E30\u0E23\u0E32\u0E04\u0E32\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32', 'error');
+                return;
+            }
+
+            const productData = {
+                name,
+                description,
+                icon: icon || '\uD83D\uDCE6',
+                icon_bg: iconBg || 'linear-gradient(135deg, #667eea, #764ba2)',
+                price,
+                category,
+                rating,
+                reviews: 0,
+                popular: false
+            };
+
+            try {
+                if (_editingProductId) {
+                    const { error } = await supabaseClient.from('products').update(productData).eq('id', _editingProductId);
+                    if (error) throw error;
+                    showToast('\u0E41\u0E01\u0E49\u0E44\u0E02\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08', 'success');
+                } else {
+                    const { error } = await supabaseClient.from('products').insert(productData);
+                    if (error) throw error;
+                    showToast('\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08', 'success');
+                }
+                await loadProducts();
+                cancelProductForm();
+                renderAdminProducts();
+            } catch (e) {
+                showToast('\u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08: ' + e.message, 'error');
+            }
+        }
+
+        async function confirmDeleteProduct(id) {
+            if (!confirm('\u0E41\u0E19\u0E48\u0E43\u0E08\u0E27\u0E48\u0E32\u0E15\u0E49\u0E2D\u0E07\u0E01\u0E32\u0E23\u0E25\u0E1A\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E19\u0E35\u0E49?')) return;
+            try {
+                const { error } = await supabaseClient.from('products').delete().eq('id', id);
+                if (error) throw error;
+                showToast('\u0E25\u0E1A\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08', 'success');
+                await loadProducts();
+                renderAdminProducts();
+            } catch (e) {
+                showToast('\u0E25\u0E1A\u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08: ' + e.message, 'error');
+            }
+        }
+
+        // --- Orders ----------------------------------------------------
+
+        async function renderAdminOrders() {
+            const container = document.getElementById('adminOrdersContainer');
+            if (!supabaseClient) {
+                container.innerHTML = '<div class="admin-empty"><i class="fas fa-database"></i><p>Supabase \u0E44\u0E21\u0E48\u0E1E\u0E23\u0E49\u0E2D\u0E21\u0E17\u0E33\u0E07\u0E32\u0E19</p></div>';
+                return;
+            }
+            try {
+                const { data, error } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false });
+                if (error) throw error;
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<div class="admin-empty"><i class="fas fa-receipt"></i><p>\u0E22\u0E31\u0E07\u0E44\u0E21\u0E48\u0E21\u0E35\u0E2D\u0E2D\u0E40\u0E14\u0E2D\u0E23\u0E4C</p></div>';
+                    return;
+                }
+                let html = '<table class="admin-table"><thead><tr><th>\u0E40\u0E25\u0E02\u0E17\u0E35\u0E48\u0E2D\u0E2D\u0E40\u0E14\u0E2D\u0E23\u0E4C</th><th>\u0E25\u0E39\u0E01\u0E04\u0E49\u0E32</th><th>\u0E22\u0E2D\u0E14\u0E23\u0E27\u0E21</th><th>\u0E0A\u0E33\u0E23\u0E30\u0E17\u0E32\u0E07</th><th>\u0E27\u0E31\u0E19\u0E17\u0E35\u0E48</th><th>\u0E2A\u0E16\u0E32\u0E19\u0E30</th><th>\u0E08\u0E31\u0E14\u0E01\u0E32\u0E23</th></tr></thead><tbody>';
+                const statusLabels = { pending: '\u23F3 \u0E23\u0E2D\u0E0A\u0E33\u0E23\u0E30', paid: '\u2705 \u0E0A\u0E33\u0E23\u0E30\u0E41\u0E25\u0E49\u0E27', completed: '\uD83D\uDCE6 \u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23\u0E41\u0E25\u0E49\u0E27', cancelled: '\u274C \u0E22\u0E01\u0E40\u0E25\u0E34\u0E01' };
+                data.forEach(o => {
+                    const s = o.status || 'pending';
+                    html += '<tr>' +
+                        '<td><strong>' + escapeHtml(o.order_number) + '</strong></td>' +
+                        '<td>' + escapeHtml(o.customer_name || '-') + '</td>' +
+                        '<td>' + formatPrice(o.total || 0) + '</td>' +
+                        '<td>' + escapeHtml(o.payment_method || '-') + '</td>' +
+                        '<td>' + (o.created_at ? new Date(o.created_at).toLocaleDateString('th-TH') : '-') + '</td>' +
+                        '<td><span class="admin-status ' + s + '">' + (statusLabels[s] || s) + '</span></td>' +
+                        '<td>' +
+                            '<select onchange="updateOrderStatus(\u0027' + o.order_number + '\u0027, this.value)">' +
+                                '<option value="pending"' + (s === 'pending' ? ' selected' : '') + '>\u23F3 \u0E23\u0E2D\u0E0A\u0E33\u0E23\u0E30</option>' +
+                                '<option value="paid"' + (s === 'paid' ? ' selected' : '') + '>\u2705 \u0E0A\u0E33\u0E23\u0E30\u0E41\u0E25\u0E49\u0E27</option>' +
+                                '<option value="completed"' + (s === 'completed' ? ' selected' : '') + '>\uD83D\uDCE6 \u0E14\u0E33\u0E40\u0E19\u0E34\u0E19\u0E01\u0E32\u0E23\u0E41\u0E25\u0E49\u0E27</option>' +
+                                '<option value="cancelled"' + (s === 'cancelled' ? ' selected' : '') + '>\u274C \u0E22\u0E01\u0E40\u0E25\u0E34\u0E01</option>' +
+                            '</select>' +
+                        '</td></tr>';
+                });
+                html += '</tbody></table>';
+                container.innerHTML = html;
+            } catch (e) {
+                container.innerHTML = '<div class="admin-empty"><i class="fas fa-exclamation-triangle"></i><p>\u0E42\u0E2B\u0E25\u0E14\u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08: ' + e.message + '</p></div>';
+            }
+        }
+
+        async function updateOrderStatus(orderNumber, newStatus) {
+            try {
+                const { error } = await supabaseClient.from('orders').update({ status: newStatus }).eq('order_number', orderNumber);
+                if (error) throw error;
+                showToast('\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15\u0E2A\u0E16\u0E32\u0E19\u0E30\u0E2D\u0E2D\u0E40\u0E14\u0E2D\u0E23\u0E4C ' + orderNumber + ' \u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08', 'success');
+                renderAdminOrders();
+            } catch (e) {
+                showToast('\u0E2D\u0E31\u0E1B\u0E40\u0E14\u0E15\u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08: ' + e.message, 'error');
+            }
+        }
+
         // KEYBOARD SHORTCUT
         // ============================================================
         document.addEventListener('keydown', function(e) {
