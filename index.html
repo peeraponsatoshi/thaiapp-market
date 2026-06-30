@@ -1843,84 +1843,125 @@
     <!-- ============================================================
     JAVASCRIPT
     ============================================================ -->
-    <script>
-        // ============================================================
-        // SUPABASE CONFIGURATION
-        // ============================================================
-        // 📌 โหมดการทำงาน:
-        //    - PRODUCTION:  ตั้งค่า SUPABASE_URL + SUPABASE_ANON_KEY ใน Vercel Env
-        //    - DEVELOPMENT: ไม่ต้องตั้งค่า ระบบใช้ localStorage อัตโนมัติ
-        // ============================================================
+	    <script>
+	        // ============================================================
+	        // SUPABASE CONFIGURATION
+	        // ============================================================
+	        // 📌 โหมดการทำงาน:
+	        //    - PRODUCTION:  ตั้งค่า SUPABASE_URL + SUPABASE_ANON_KEY ใน Vercel Env
+	        //    - DEVELOPMENT: ไม่ต้องตั้งค่า ระบบใช้ localStorage อัตโนมัติ
+	        // ============================================================
 
-        let supabaseClient = null;
-        let currentUserId = null;
-        let supabaseConfigLoaded = false;
+	        let supabaseClient = null;
+	        let currentUserId = null;
+	        let supabaseConfigLoaded = false;
 
-        // ลองโหลด Config จาก Serverless Function (/api/config)
-        async function initSupabase() {
-            if (supabaseConfigLoaded) return;
-            supabaseConfigLoaded = true;
+		        // ─── แก้ปัญหาหลัก: จัดการ OAuth hash ก่อน init Supabase client ───
+		        // เพราะ Supabase client อาจใช้เวลาประมวลผล hash ทำให้พลาด session
+		        (function handleOAuthRedirect() {
+		            const hash = window.location.hash;
+		            if (!hash || !hash.includes('access_token')) return;
 
-            let url = '';
-            let anonKey = '';
+		            console.log('🔑 OAuth redirect detected, processing hash manually...');
 
-            try {
-                // พยายามโหลดจาก Vercel Serverless Function
-                const resp = await fetch('/api/config');
-                const config = await resp.json();
-                if (config.configured) {
-                    url = config.supabaseUrl;
-                    anonKey = config.supabaseAnonKey;
-                }
-            } catch (e) {
-                console.log('⚠️ /api/config not available, using fallback');
-            }
+		            try {
+		                const params = new URLSearchParams(hash.replace('#', '?'));
+		                const accessToken = params.get('access_token');
+		                const refreshToken = params.get('refresh_token');
+		                const expiresIn = params.get('expires_in');
+		                const expiresAt = params.get('expires_at');
+		                const tokenType = params.get('token_type') || 'bearer';
 
-            // Fallback: ใส่ค่าตรงนี้ถ้า /api/config ไม่ทำงาน
-            if (!url || !anonKey) {
-                url = 'https://joxiwfemnpynuigmoery.supabase.co';
-                anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpveGl3ZmVtbnB5bnVpZ21vZXJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3ODYxNjAsImV4cCI6MjA5ODM2MjE2MH0.8tldN6MD190O5ZkJQ8xaLsq4yIo207eYJZrCvHSY3do';
-            }
+		                if (!accessToken) return;
 
-            if (url && anonKey && typeof supabase !== 'undefined') {
-                try {
-                    supabaseClient = supabase.createClient(url, anonKey);
-                    console.log('🔗 Supabase connected');
+		                // Decode JWT payload เพื่อเอา user data
+		                const payload = JSON.parse(atob(accessToken.split('.')[1]));
+		                const user = {
+		                    id: payload.sub,
+		                    email: payload.email || '',
+		                    user_metadata: payload.user_metadata || {},
+		                    app_metadata: payload.app_metadata || {},
+		                    aud: payload.aud || 'authenticated',
+		                    role: payload.role || 'authenticated',
+		                };
 
-                    // ✅ ฟัง auth state changes (สำคัญสำหรับ OAuth callback)
-                    supabaseClient.auth.onAuthStateChange((event, session) => {
-                        console.log('🔐 Auth event:', event);
-                        if (event === 'SIGNED_IN' && session?.user) {
-                            currentUserId = session.user.id;
-                            const name = session.user.user_metadata?.full_name
-                                        || session.user.user_metadata?.name
-                                        || session.user.email?.split('@')[0];
-                            updateUIForLoggedIn({
-                                id: session.user.id,
-                                name: name,
-                                email: session.user.email
-                            });
-                            showToast('เข้าสู่ระบบสำเร็จ! 👋');
+		                const session = {
+		                    access_token: accessToken,
+		                    refresh_token: refreshToken || '',
+		                    token_type: tokenType,
+		                    expires_in: parseInt(expiresIn || '3600'),
+		                    expires_at: parseInt(expiresAt || '0'),
+		                    user: user,
+		                    provider_token: params.get('provider_token'),
+		                    provider_refresh_token: params.get('provider_refresh_token'),
+		                };
 
-                            // ล้าง URL hash ถ้ายังมีอยู่
-                            if (window.location.hash.includes('access_token')) {
-                                window.history.replaceState(null, '', window.location.pathname);
-                            }
-                        } else if (event === 'SIGNED_OUT') {
-                            document.getElementById('userInfo').classList.remove('show');
-                            document.getElementById('loginBtn').style.display = 'inline-flex';
-                        }
-                    });
-                } catch (e) {
-                    console.warn('⚠️ Supabase init failed, using localStorage:', e.message);
-                }
-            } else {
-                console.log('💾 Using localStorage (no Supabase config)');
-            }
-        }
+		                // เซฟ session ลง localStorage ในรูปแบบที่ Supabase อ่านได้
+		                const storageKey = 'sb-joxiwfemnpynuigmoery-auth-token';
+		                localStorage.setItem(storageKey, JSON.stringify(session));
+		                console.log('💾 OAuth session saved to localStorage');
 
-        // เรียก initSupabase ทันที แล้วค่อย checkSession
-        initSupabase().then(() => checkSession());
+		                // ✅ ล้าง URL hash
+		                window.history.replaceState(null, '', window.location.pathname);
+
+		                // อัปเดต UI โดยใช้ flag รอให้ function พร้อม
+		                window._pendingOAuthUser = user;
+		            } catch (e) {
+		                console.warn('OAuth hash processing error:', e.message);
+		            }
+		        })();
+
+	        // ─── init Supabase ───
+	        async function initSupabase() {
+	            if (supabaseConfigLoaded) return;
+	            supabaseConfigLoaded = true;
+
+	            let url = '';
+	            let anonKey = '';
+
+	            try {
+	                const resp = await fetch('/api/config');
+	                const config = await resp.json();
+	                if (config.configured) {
+	                    url = config.supabaseUrl;
+	                    anonKey = config.supabaseAnonKey;
+	                }
+	            } catch (e) {
+	                console.log('⚠️ /api/config not available, using fallback');
+	            }
+
+	            if (!url || !anonKey) {
+	                url = 'https://joxiwfemnpynuigmoery.supabase.co';
+	                anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpveGl3ZmVtbnB5bnVpZ21vZXJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3ODYxNjAsImV4cCI6MjA5ODM2MjE2MH0.8tldN6MD190O5ZkJQ8xaLsq4yIo207eYJZrCvHSY3do';
+	            }
+
+	            if (url && anonKey && typeof supabase !== 'undefined') {
+	                try {
+	                    supabaseClient = supabase.createClient(url, anonKey);
+	                    console.log('🔗 Supabase connected');
+
+	                    // ฟัง auth state changes (สำหรับการ login/logout ปกติ)
+	                    supabaseClient.auth.onAuthStateChange((event, session) => {
+	                        console.log('🔐 Auth event:', event);
+	                        if (event === 'SIGNED_IN' && session?.user) {
+	                            currentUserId = session.user.id;
+	                        } else if (event === 'SIGNED_OUT') {
+	                            currentUserId = null;
+	                            document.getElementById('userInfo').classList.remove('show');
+	                            document.getElementById('loginBtn').style.display = 'inline-flex';
+	                        } else if (event === 'TOKEN_REFRESHED') {
+	                            currentUserId = session?.user?.id || currentUserId;
+	                        }
+	                    });
+	                } catch (e) {
+	                    console.warn('⚠️ Supabase init failed, using localStorage:', e.message);
+	                }
+	            } else {
+	                console.log('💾 Using localStorage (no Supabase config)');
+	            }
+	        }
+
+	        initSupabase().then(() => checkSession());
 
         // ============================================================
         // DATA
@@ -2529,75 +2570,23 @@
         }
 
         async function checkSession() {
-            const hash = window.location.hash;
-
-            // ✅ ตรวจสอบ OAuth callback (Google redirect กลับมา)
-            if (hash && hash.includes('access_token')) {
-                showToast('กำลังเข้าสู่ระบบด้วย Google...', 'info');
-
-                if (supabaseClient) {
-                    // ✅ ลองหลายครั้ง เพราะ Supabase client อาจยัง init ไม่เสร็จ
-                    for (let attempt = 1; attempt <= 5; attempt++) {
-                        try {
-                            let session = null;
-
-                            const { data, error } = await supabaseClient.auth.getSession();
-                            if (!error && data?.session) {
-                                session = data.session;
-                            } else {
-                                // Manual fallback: parse hash → setSession
-                                const params = new URLSearchParams(hash.replace('#', '?'));
-                                const accessToken = params.get('access_token');
-                                const refreshToken = params.get('refresh_token');
-                                if (accessToken) {
-                                    const { data: setData, error: setError } = await supabaseClient.auth.setSession({
-                                        access_token: accessToken,
-                                        refresh_token: refreshToken || ''
-                                    });
-                                    if (!setError && setData?.session) {
-                                        session = setData.session;
-                                    }
-                                }
-                            }
-
-                            if (session?.user) {
-                                currentUserId = session.user.id;
-                                const name = session.user.user_metadata?.full_name
-                                            || session.user.user_metadata?.name
-                                            || session.user.email?.split('@')[0];
-                                updateUIForLoggedIn({
-                                    id: session.user.id,
-                                    name: name,
-                                    email: session.user.email
-                                });
-                                showToast('เข้าสู่ระบบด้วย Google สำเร็จ! 👋');
-
-                                // ✅ ล้าง URL hash ให้สะอาด
-                                window.history.replaceState(null, '', window.location.pathname);
-                                return;
-                            }
-
-                            // ยังไม่ได้ session → รอแล้วลองใหม่
-                            if (attempt < 5) {
-                                console.log(`⏳ OAuth attempt ${attempt}: no session yet, retrying in ${attempt}s...`);
-                                await new Promise(r => setTimeout(r, attempt * 500));
-                            }
-                        } catch (e) {
-                            console.warn(`OAuth attempt ${attempt} error:`, e.message);
-                            if (attempt < 5) {
-                                await new Promise(r => setTimeout(r, attempt * 500));
-                            }
-                        }
-                    }
-
-                    // ❌ ลอง 5 ครั้งแล้วยังไม่ได้ session
-                    showToast('ล็อคอินไม่สำเร็จ กรุณาลองใหม่', 'error');
-                    window.history.replaceState(null, '', window.location.pathname);
-                    return;
-                }
+            // ✅ ถ้ามี OAuth user ที่รออัปเดต (เซฟจาก handleOAuthRedirect)
+            if (window._pendingOAuthUser) {
+                const user = window._pendingOAuthUser;
+                window._pendingOAuthUser = null;
+                const name = user.user_metadata?.full_name
+                            || user.user_metadata?.name
+                            || user.email?.split('@')[0];
+                updateUIForLoggedIn({
+                    id: user.id,
+                    name: name,
+                    email: user.email
+                });
+                showToast('เข้าสู่ระบบด้วย Google สำเร็จ! 👋');
+                return;
             }
 
-            // เช็ค session ปกติ (ถ้าไม่มี OAuth callback หรือล้าง URL แล้ว)
+            // normal session check (สำหรับ refresh หน้าปกติ)
             const session = await getSession();
             if (session) {
                 updateUIForLoggedIn(session);
