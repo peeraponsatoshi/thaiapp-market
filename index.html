@@ -1970,12 +1970,17 @@
 	            }
 	        }
 
-	        initSupabase().then(() => checkSession());
+	        initSupabase().then(() => {
+    checkSession();
+    loadProducts();
+});
 
         // ============================================================
         // DATA
         // ============================================================
-        const appsData = [{
+
+        // Fallback products (ใช้เมื่อ Supabase offline)
+        const FALLBACK_PRODUCTS = [{
             id: 1,
             name: 'เสียงไทย TTS Pro',
             desc: 'แปลงข้อความภาษาไทยเป็นเสียงสังเคราะห์คุณภาพสูง เลือกเสียงได้ 50+ เสียง ทั้งชาย หญิง และเด็ก ปรับระดับอารมณ์ได้',
@@ -2042,6 +2047,40 @@
             reviews: 421,
             popular: false
         }];
+
+        // Products data (โหลดจาก Supabase ถ้าไม่ได้ใช้ fallback)
+        let productsData = [...FALLBACK_PRODUCTS];
+
+        // โหลด products จาก Supabase
+        async function loadProducts() {
+            if (!supabaseClient) return;
+            try {
+                const { data, error } = await supabaseClient
+                    .from('products')
+                    .select('*')
+                    .order('id');
+                if (!error && data && data.length > 0) {
+                    productsData = data.map(p => ({
+                        id: p.id,
+                        name: p.name,
+                        desc: p.description,
+                        icon: p.icon,
+                        iconBg: p.icon_bg,
+                        price: p.price,
+                        category: p.category,
+                        rating: p.rating,
+                        reviews: p.reviews,
+                        popular: p.popular
+                    }));
+                    // Re-render with real data
+                    renderApps(productsData, 'appsGrid');
+                    renderApps(productsData.filter(a => a.popular), 'popularGrid');
+                    console.log('📦 Products loaded from Supabase:', productsData.length);
+                }
+            } catch (e) {
+                console.warn('⚠️ Could not load products from Supabase, using fallback');
+            }
+        }
 
         const testimonialsData = [
             { name: 'พิมพ์ชนก ก.', role: 'ครีเอเตอร์สายทำคลิป', text: 'ใช้เสียงไทย TTS Pro กับคลิปโปร AI คู่กันคือปังมาก! ประหยัดเวลาเป็นวัน ตอนนี้รายได้เพิ่มขึ้นเท่าตัวเลย' },
@@ -2148,8 +2187,8 @@
         }
 
         // Initial render
-        renderApps(appsData, 'appsGrid');
-        renderApps(appsData.filter(a => a.popular), 'popularGrid');
+        renderApps(productsData, 'appsGrid');
+        renderApps(productsData.filter(a => a.popular), 'popularGrid');
 
         // ============================================================
         // FILTER APPS
@@ -2159,7 +2198,7 @@
             document.querySelectorAll('.category-card').forEach(c => c.classList.remove('active'));
             if (el) el.classList.add('active');
 
-            const filtered = category === 'all' ? appsData : appsData.filter(a => a.category === category);
+            const filtered = category === 'all' ? productsData : productsData.filter(a => a.category === category);
             renderApps(filtered, 'appsGrid');
 
             // Scroll to apps
@@ -2455,8 +2494,8 @@
                         return;
                     }
                     if (data?.user) {
-                        // Create profile
-                        await supabaseClient.from('profiles').insert({
+                        // Upsert profile (ป้องกัน conflict กับ trigger auto-create)
+                        await supabaseClient.from('profiles').upsert({
                             id: data.user.id,
                             name,
                             phone,
@@ -2607,7 +2646,7 @@
         // ============================================================
 
         async function addToCart(appId) {
-            const app = appsData.find(a => a.id === appId);
+            const app = productsData.find(a => a.id === appId);
             if (!app) return;
 
             let cart = await getCart();
