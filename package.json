@@ -1,0 +1,12 @@
+{
+  "name": "thaiapp-market",
+  "version": "1.0.0",
+  "description": "Thai App Market - เว็บขายแอปสไตล์ไทย สำหรับครีเอเตอร์",
+  "scripts": {
+    "dev": "npx serve .",
+    "start": "npx serve ."
+  },
+  "keywords": ["thai", "app-market", "ai-tools", "thailand"],
+  "author": "ThaiApp Market",
+  "license": "MIT"
+}
