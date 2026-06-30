@@ -1873,18 +1873,20 @@
                     anonKey = config.supabaseAnonKey;
                 }
             } catch (e) {
-                // Fallback: ใช้ค่า Hardcode (สะดวกเวลา local dev)
-                // ✏️ หรือจะใส่ค่า Supabase ตรงนี้ก็ได้ (ไม่แนะนำให้ commit ขึ้น Git)
-                url = '';   // ← ใส่ Supabase URL
-                anonKey = ''; // ← ใส่ Supabase Anon Key
+                console.log('⚠️ /api/config not available, using fallback');
+            }
+
+            // Fallback: ใส่ค่าตรงนี้ถ้า /api/config ไม่ทำงาน
+            if (!url || !anonKey) {
+                url = 'https://joxiwfemnpynuigmoery.supabase.co';
+                anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpveGl3ZmVtbnB5bnVpZ21vZXJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3ODYxNjAsImV4cCI6MjA5ODM2MjE2MH0.8tldN6MD190O5ZkJQ8xaLsq4yIo207eYJZrCvHSY3do';
             }
 
             if (url && anonKey && typeof supabase !== 'undefined') {
                 try {
                     supabaseClient = supabase.createClient(url, anonKey);
                     console.log('🔗 Supabase connected');
-                    // ถ้าเชื่อมต่อได้ ให้รีเช็ค session
-                    checkSession();
+                    // checkSession เรียกจาก .then() ด้านล่างแล้ว ไม่ต้องเรียกซ้ำ
                 } catch (e) {
                     console.warn('⚠️ Supabase init failed, using localStorage:', e.message);
                 }
@@ -1893,8 +1895,8 @@
             }
         }
 
-        // เรียก initSupabase ทันที
-        initSupabase();
+        // เรียก initSupabase ทันที แล้วค่อย checkSession
+        initSupabase().then(() => checkSession());
 
         // ============================================================
         // DATA
@@ -2182,22 +2184,36 @@
                     const { data: { session }, error } = await supabaseClient.auth.getSession();
                     if (error) throw error;
                     if (session?.user) {
-                        // Get profile name
-                        const { data: profile } = await supabaseClient
-                            .from('profiles')
-                            .select('name, phone')
-                            .eq('id', session.user.id)
-                            .single();
                         currentUserId = session.user.id;
+                        // ✅ ดึง profile ถ้ามี ถ้าไม่มีก็ใช้ metadata หรือ email แทน
+                        let name = null;
+                        let phone = null;
+                        try {
+                            const { data: profile } = await supabaseClient
+                                .from('profiles')
+                                .select('name, phone')
+                                .eq('id', session.user.id)
+                                .single();
+                            if (profile) {
+                                name = profile.name;
+                                phone = profile.phone;
+                            }
+                        } catch (e) {
+                            // ไม่มี profile → ใช้ metadata แทน
+                            console.log('ℹ️ No profile found for user, using metadata');
+                        }
                         return {
                             id: session.user.id,
-                            name: profile?.name || session.user.email?.split('@')[0],
+                            name: name || session.user.user_metadata?.full_name
+                                        || session.user.user_metadata?.name
+                                        || session.user.email?.split('@')[0],
                             email: session.user.email
                         };
                     }
                     return null;
                 } catch (e) {
                     console.warn('Supabase getSession error:', e.message);
+                    return null;
                 }
             }
             return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
@@ -2472,10 +2488,12 @@
                 return;
             }
             try {
+                // ใช้ origin ปัจจุบัน (localhost หรือ production ก็ได้)
+                const redirectUrl = window.location.origin;
                 const { data, error } = await supabaseClient.auth.signInWithOAuth({
                     provider: 'google',
                     options: {
-                        redirectTo: window.location.origin + window.location.pathname
+                        redirectTo: redirectUrl
                     }
                 });
                 if (error) {
@@ -2487,17 +2505,66 @@
         }
 
         async function checkSession() {
-            // ตรวจสอบ OAuth callback (Google redirect กลับมา)
-            if (window.location.hash.includes('access_token')) {
+            const hash = window.location.hash;
+
+            // ✅ ตรวจสอบ OAuth callback (Google redirect กลับมา)
+            if (hash && hash.includes('access_token')) {
                 showToast('กำลังเข้าสู่ระบบด้วย Google...', 'info');
+
+                // ให้ Supabase client จัดการ session จาก URL hash
+                if (supabaseClient) {
+                    try {
+                        // ถ้า getSession ไม่ได้ session (เพราะ hash อาจถูก consume แล้ว)
+                        // ให้ลอง parse hash เพื่อ setSession โดยตรง
+                        let session = null;
+
+                        const { data, error } = await supabaseClient.auth.getSession();
+                        if (!error && data?.session) {
+                            session = data.session;
+                        } else {
+                            // Manual fallback: parse hash → setSession
+                            const params = new URLSearchParams(hash.replace('#', '?'));
+                            const accessToken = params.get('access_token');
+                            const refreshToken = params.get('refresh_token');
+                            if (accessToken) {
+                                const { data: setData, error: setError } = await supabaseClient.auth.setSession({
+                                    access_token: accessToken,
+                                    refresh_token: refreshToken || ''
+                                });
+                                if (!setError && setData?.session) {
+                                    session = setData.session;
+                                }
+                            }
+                        }
+
+                        if (session?.user) {
+                            currentUserId = session.user.id;
+                            const name = session.user.user_metadata?.full_name
+                                        || session.user.user_metadata?.name
+                                        || session.user.email?.split('@')[0];
+                            updateUIForLoggedIn({
+                                id: session.user.id,
+                                name: name,
+                                email: session.user.email
+                            });
+                            showToast('เข้าสู่ระบบด้วย Google สำเร็จ! 👋');
+
+                            // ✅ ล้าง URL hash ให้สะอาด
+                            window.history.replaceState(null, '', window.location.pathname);
+                            return;
+                        }
+                    } catch (e) {
+                        console.warn('OAuth callback processing error:', e.message);
+                    }
+                }
             }
 
+            // เช็ค session ปกติ (ถ้าไม่มี OAuth callback หรือล้าง URL แล้ว)
             const session = await getSession();
             if (session) {
                 updateUIForLoggedIn(session);
             }
         }
-        checkSession();
 
         // ============================================================
         // CART SYSTEM
