@@ -1859,8 +1859,14 @@
 		        // ─── แก้ปัญหาหลัก: จัดการ OAuth hash ก่อน init Supabase client ───
 		        // เพราะ Supabase client อาจใช้เวลาประมวลผล hash ทำให้พลาด session
 		        (function handleOAuthRedirect() {
+		            console.log('🔍 handleOAuthRedirect checking hash...');
 		            const hash = window.location.hash;
-		            if (!hash || !hash.includes('access_token')) return;
+		            console.log('📍 hash:', hash ? hash.substring(0, 80) + '...' : '(empty)');
+		            if (!hash || !hash.includes('access_token')) {
+		                console.log('❌ No OAuth hash found, skipping');
+		                return;
+		            }
+		            console.log('✅ OAuth hash detected!');
 
 		            console.log('🔑 OAuth redirect detected, processing hash manually...');
 
@@ -1899,13 +1905,16 @@
 		                // เซฟ session ลง localStorage ในรูปแบบที่ Supabase อ่านได้
 		                const storageKey = 'sb-joxiwfemnpynuigmoery-auth-token';
 		                localStorage.setItem(storageKey, JSON.stringify(session));
-		                console.log('💾 OAuth session saved to localStorage');
+		                console.log('💾 OAuth session saved to localStorage under key:', storageKey);
+		                console.log('👤 User:', user.email, user.id);
 
 		                // ✅ ล้าง URL hash
 		                window.history.replaceState(null, '', window.location.pathname);
+		                console.log('🧹 URL hash cleared');
 
 		                // อัปเดต UI โดยใช้ flag รอให้ function พร้อม
 		                window._pendingOAuthUser = user;
+		                console.log('🏁 _pendingOAuthUser set, waiting for checkSession...');
 		            } catch (e) {
 		                console.warn('OAuth hash processing error:', e.message);
 		            }
