@@ -1873,10 +1873,13 @@
                     anonKey = config.supabaseAnonKey;
                 }
             } catch (e) {
-                // Fallback: ใช้ค่า Hardcode (สะดวกเวลา local dev)
-                // ✏️ หรือจะใส่ค่า Supabase ตรงนี้ก็ได้ (ไม่แนะนำให้ commit ขึ้น Git)
-                url = '';   // ← ใส่ Supabase URL
-                anonKey = ''; // ← ใส่ Supabase Anon Key
+                console.log('⚠️ /api/config not available, using fallback');
+            }
+
+            // Fallback: ใส่ค่าตรงนี้ถ้า /api/config ไม่ทำงาน
+            if (!url || !anonKey) {
+                url = 'https://joxiwfemnpynuigmoery.supabase.co';
+                anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpveGl3ZmVtbnB5bnVpZ21vZXJ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI3ODYxNjAsImV4cCI6MjA5ODM2MjE2MH0.8tldN6MD190O5ZkJQ8xaLsq4yIo207eYJZrCvHSY3do';
             }
 
             if (url && anonKey && typeof supabase !== 'undefined') {
