@@ -2262,6 +2262,7 @@
 		                            <span style="margin-left:6px;font-weight:500;">⭐ ยอดนิยม</span>
 		                        </label>
 		                    </div>
+		                    <div class="form-group"><label>สต็อก</label><input type="number" id="pfStock" placeholder="จำนวนคงเหลือ" min="0" value="0"></div>
 	                    <div class="form-group full-width"><label>รายละเอียด</label><textarea id="pfDesc" placeholder="รายละเอียดสินค้า"></textarea></div>
 	                </div>
                 <div style="display:flex;gap:10px;margin-top:8px;">
@@ -2543,9 +2544,10 @@
 	                        imageUrl: p.image_url,
 	                        price: p.price,
 	                        category: p.category,
-	                        rating: p.rating,
-	                        reviews: p.reviews,
-	                        popular: p.popular
+		                        rating: p.rating,
+		                        reviews: p.reviews,
+		                        popular: p.popular,
+		                        stock: p.stock
 	                    }));
 	                } else {
 	                    // No data from Supabase, use fallback
@@ -2658,12 +2660,12 @@
 	                        <p>${app.desc}</p>
 	                        <div class="app-card-footer">
 	                            <div>
-	                                <div class="rating">
-	                                    ${'<i class="fas fa-star"></i>'.repeat(Math.floor(app.rating))}
-	                                    ${app.rating % 1 >= 0.5 ? '<i class="fas fa-star-half-alt"></i>' : ''}
-	                                    <span class="count">(${app.reviews})</span>
-	                                </div>
-	                                <div class="app-price">${formatPrice(app.price)}</div>
+		                                <div class="rating">
+		                                    ${'<i class="fas fa-star"></i>'.repeat(Math.floor(app.rating))}
+		                                    ${app.rating % 1 >= 0.5 ? '<i class="fas fa-star-half-alt"></i>' : ''}
+		                                    <span class="count">(${app.reviews})</span>
+		                                </div>
+		                                <div class="app-price">${formatPrice(app.price)} ${app.stock !== undefined && app.stock <= 5 ? `<span style="font-size:.7rem;color:var(--crimson);font-weight:400;">(เหลือ ${app.stock})</span>` : ''}</div>
 	                            </div>
 		                            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();addToCart(${app.id})">
 	                                <i class="fas fa-cart-plus"></i> เพิ่ม
@@ -3890,9 +3892,10 @@
 	                        document.getElementById('pfCategory').value = data.category || 'tts';
 	                        document.getElementById('pfPrice').value = data.price || '';
 	                        document.getElementById('pfIcon').value = data.icon || '';
-	                        document.getElementById('pfIconBg').value = data.icon_bg || '';
-		                        document.getElementById('pfRating').value = data.rating || '';
-		                        document.getElementById('pfDesc').value = data.description || '';
+		                document.getElementById('pfIconBg').value = data.icon_bg || '';
+		                document.getElementById('pfRating').value = data.rating || '';
+		                document.getElementById('pfStock').value = data.stock ?? '';
+		                document.getElementById('pfDesc').value = data.description || '';
 		                        document.getElementById('pfPopular').checked = !!data.popular;
 
 		                        // Show existing image if any
@@ -3916,8 +3919,9 @@
 	                document.getElementById('pfCategory').value = 'tts';
 	                document.getElementById('pfPrice').value = '';
 	                document.getElementById('pfIcon').value = '';
-	                document.getElementById('pfIconBg').value = '';
+		                document.getElementById('pfIconBg').value = '';
 		                document.getElementById('pfRating').value = '';
+		                document.getElementById('pfStock').value = '';
 		                document.getElementById('pfDesc').value = '';
 		                document.getElementById('pfPopular').checked = false;
 	            }
@@ -3940,6 +3944,7 @@
 	            const rating = parseFloat(document.getElementById('pfRating').value) || 0;
 	            const description = document.getElementById('pfDesc').value.trim();
 	            const popular = document.getElementById('pfPopular').checked;
+	            const stock = parseInt(document.getElementById('pfStock').value) || 0;
 
 	            if (!name || !price) {
 	                showToast('\u0E01\u0E23\u0E38\u0E13\u0E32\u0E01\u0E23\u0E2D\u0E01\u0E0A\u0E37\u0E48\u0E2D\u0E41\u0E25\u0E30\u0E23\u0E32\u0E04\u0E32\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32', 'error');
@@ -3953,9 +3958,10 @@
 	                icon_bg: iconBg || 'linear-gradient(135deg, #667eea, #764ba2)',
 	                price,
 	                category,
-	                rating,
-	                reviews: 0,
-	                popular
+		                rating,
+		                reviews: 0,
+		                popular,
+		                stock
 	            };
 
 	            try {
