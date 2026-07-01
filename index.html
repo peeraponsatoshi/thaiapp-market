@@ -2455,32 +2455,42 @@
         // ============================================================
         // RENDER APPS
         // ============================================================
-        function renderApps(apps, containerId) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = apps.map((app, index) => `
-                    <div class="app-card reveal reveal-delay-${Math.min(index % 6 + 1, 6)}">
-                        <div class="app-card-icon" style="background:${app.imageUrl ? 'transparent' : app.iconBg}">
-                            ${app.imageUrl ? `<img src="${app.imageUrl}" alt="${app.name}" loading="lazy">` : (app.icon || '📦')}
-                        </div>
-                        <h3>${app.name}</h3>
-                        <span class="category-tag">${getCategoryLabel(app.category)}</span>
-                        <p>${app.desc}</p>
-                        <div class="app-card-footer">
-                            <div>
-                                <div class="rating">
-                                    ${'<i class="fas fa-star"></i>'.repeat(Math.floor(app.rating))}
-                                    ${app.rating % 1 >= 0.5 ? '<i class="fas fa-star-half-alt"></i>' : ''}
-                                    <span class="count">(${app.reviews})</span>
-                                </div>
-                                <div class="app-price">${formatPrice(app.price)}</div>
-                            </div>
-                            <button class="btn btn-primary btn-sm" onclick="addToCart(${app.id})">
-                                <i class="fas fa-cart-plus"></i> เพิ่ม
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
-        }
+	        function renderApps(apps, containerId) {
+	            const container = document.getElementById(containerId);
+	            container.innerHTML = apps.map((app, index) => `
+	                    <div class="app-card reveal reveal-delay-${Math.min(index % 6 + 1, 6)}">
+	                        <div class="app-card-icon" style="background:${app.imageUrl ? 'transparent' : app.iconBg}">
+	                            ${app.imageUrl ? `<img src="${app.imageUrl}" alt="${app.name}" loading="lazy">` : (app.icon || '📦')}
+	                        </div>
+	                        <h3>${app.name}</h3>
+	                        <span class="category-tag">${getCategoryLabel(app.category)}</span>
+	                        <p>${app.desc}</p>
+	                        <div class="app-card-footer">
+	                            <div>
+	                                <div class="rating">
+	                                    ${'<i class="fas fa-star"></i>'.repeat(Math.floor(app.rating))}
+	                                    ${app.rating % 1 >= 0.5 ? '<i class="fas fa-star-half-alt"></i>' : ''}
+	                                    <span class="count">(${app.reviews})</span>
+	                                </div>
+	                                <div class="app-price">${formatPrice(app.price)}</div>
+	                            </div>
+	                            <button class="btn btn-primary btn-sm" onclick="addToCart(${app.id})">
+	                                <i class="fas fa-cart-plus"></i> เพิ่ม
+	                            </button>
+	                        </div>
+	                    </div>
+	                `).join('');
+	            // Observe newly added elements for scroll-reveal animation
+	            container.querySelectorAll('.reveal:not(.visible)').forEach(el => {
+	                // If already in viewport, mark visible immediately
+	                const rect = el.getBoundingClientRect();
+	                if (rect.top < window.innerHeight && rect.bottom > 0) {
+	                    el.classList.add('visible');
+	                } else {
+	                    revealObserver.observe(el);
+	                }
+	            });
+	        }
 
         function getCategoryLabel(cat) {
             const labels = {
