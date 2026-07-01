@@ -1476,6 +1476,12 @@
         .admin-toolbar h3 { font-family:var(--font-heading);font-weight:600;color:var(--navy); }
         .admin-thumb { width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;overflow:hidden; }
         .admin-thumb img { width:100%;height:100%;object-fit:cover;border-radius:8px; }
+
+        /* Stats Cards */
+        .stats-row { display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px; }
+        .stat-card { background:white;border-radius:12px;padding:16px;text-align:center;border:1px solid var(--cream-dark);box-shadow:var(--shadow); }
+        .stat-value { font-family:var(--font-heading);font-size:1.5rem;font-weight:700;color:var(--crimson); }
+        .stat-label { font-size:.8rem;color:var(--text-muted);margin-top:2px; }
         .product-form-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
         .product-form-grid .full-width { grid-column:1 / -1; }
 
@@ -1531,6 +1537,19 @@
             z-index: 2;
         }
         .image-remove-btn:hover { background: var(--crimson-dark); transform: scale(1.1); }
+
+        /* Profile Modal */
+        .profile-info { display:flex;gap:16px;align-items:center;padding:16px 0;border-bottom:1px solid var(--cream);margin-bottom:16px; }
+        .profile-avatar-lg { width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-dark));display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:var(--navy);font-weight:700; }
+        .order-history-item { padding:14px 0;border-bottom:1px solid var(--cream); }
+        .order-history-item:last-child { border-bottom:none; }
+        .order-history-header { display:flex;justify-content:space-between;align-items:center;margin-bottom:6px; }
+        .order-history-header strong { font-family:var(--font-heading);color:var(--navy); }
+        .order-history-items { font-size:.85rem;color:var(--text-muted); }
+
+        .contact-section { display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px; }
+        .contact-card { background:white;border-radius:var(--radius);padding:20px;text-align:center;box-shadow:var(--shadow);border:1px solid var(--cream-dark); }
+        .contact-card i { font-size:2rem;color:var(--gold);margin-bottom:8px; }
 
         /* --- Emoji Picker --- */
         .emoji-preview {
@@ -1646,11 +1665,12 @@
                 <span class="cart-badge" id="cartBadge">0</span>
             </button>
             <button class="nav-btn" id="loginBtn">เข้าสู่ระบบ</button>
-            <div class="user-info" id="userInfo">
-                <div class="avatar" id="userAvatar">U</div>
-                <span id="userName">ผู้ใช้</span>
-                <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button>
-            </div>
+	            <div class="user-info" id="userInfo">
+	                <div class="avatar" id="userAvatar" style="cursor:pointer;" onclick="openProfile()">U</div>
+	                <span id="userName" style="cursor:pointer;" onclick="openProfile()">ผู้ใช้</span>
+	                <button class="logout-btn" onclick="openProfile()" title="โปรไฟล์"><i class="fas fa-user"></i></button>
+	                <button class="logout-btn" id="logoutBtn" title="ออกจากระบบ"><i class="fas fa-sign-out-alt"></i></button>
+	            </div>
             <button class="admin-btn" id="adminBtn" onclick="openAdminPanel()">
                 <i class="fas fa-cog"></i> จัดการระบบ
             </button>
@@ -1853,13 +1873,12 @@
                 <a href="#categories">หมวดหมู่</a>
                 <a href="#">โปรโมชั่น</a>
             </div>
-            <div class="footer-col">
-                <h4>ช่วยเหลือ</h4>
-                <a href="#">วิธีการชำระเงิน</a>
-                <a href="#">การติดตั้งแอป</a>
-                <a href="#">นโยบายคืนเงิน</a>
-                <a href="#">คำถามที่พบบ่อย</a>
-            </div>
+		            <div class="footer-col">
+		                <h4>ช่วยเหลือ</h4>
+		                <a href="#" onclick="event.preventDefault();openModal('termsModal')">เงื่อนไขการให้บริการ</a>
+		                <a href="#" onclick="event.preventDefault();openModal('privacyModal')">นโยบายความเป็นส่วนตัว</a>
+		                <a href="#" onclick="event.preventDefault();openModal('contactModal')">ติดต่อเรา</a>
+		            </div>
             <div class="footer-col">
                 <h4>ติดต่อเรา</h4>
                 <p><i class="fas fa-envelope"></i> support@thaiappmarket.com</p>
@@ -2065,7 +2084,74 @@
     </div>
 
 
-    <!-- ADMIN MODAL -->
+	    <!-- PRODUCT DETAIL MODAL -->
+	    <div class="modal-overlay" id="productDetailModal">
+	        <div class="modal" style="max-width: 600px;">
+	            <button class="modal-close" onclick="closeProductDetail()">&times;</button>
+	            <div id="productDetailContent" class="admin-empty"><i class="fas fa-spinner fa-spin"></i><p>กำลังโหลด...</p></div>
+	        </div>
+		    </div>
+
+		    <!-- PROFILE MODAL -->
+		    <div class="modal-overlay" id="profileModal">
+		        <div class="modal" style="max-width: 550px;">
+		            <button class="modal-close" onclick="closeModal('profileModal')">&times;</button>
+		            <h2>👤 โปรไฟล์ของฉัน</h2>
+		            <div class="modal-sub">ข้อมูลส่วนตัวและประวัติการสั่งซื้อ</div>
+		            <div id="profileContent"><div class="admin-empty"><i class="fas fa-spinner fa-spin"></i><p>กำลังโหลด...</p></div></div>
+		        </div>
+			    </div>
+
+		    <!-- CONTACT MODAL -->
+		    <div class="modal-overlay" id="contactModal">
+		        <div class="modal" style="max-width: 480px;">
+		            <button class="modal-close" onclick="closeModal('contactModal')">&times;</button>
+		            <h2>📞 ติดต่อเรา</h2>
+		            <div class="modal-sub">ThaiApp Market พร้อมให้บริการ</div>
+		            <div class="contact-section">
+		                <div class="contact-card"><i class="fas fa-envelope"></i><br><strong>อีเมล</strong><br><span style="font-size:.85rem;color:var(--text-muted);">support@thaiappmarket.com</span></div>
+		                <div class="contact-card"><i class="fas fa-phone"></i><br><strong>โทรศัพท์</strong><br><span style="font-size:.85rem;color:var(--text-muted);">02-123-4567</span></div>
+		                <div class="contact-card"><i class="fas fa-map-marker-alt"></i><br><strong>ที่อยู่</strong><br><span style="font-size:.85rem;color:var(--text-muted);">กรุงเทพฯ ประเทศไทย</span></div>
+		                <div class="contact-card"><i class="fas fa-clock"></i><br><strong>เวลาทำการ</strong><br><span style="font-size:.85rem;color:var(--text-muted);">จันทร์-ศุกร์ 09:00-18:00</span></div>
+		            </div>
+		        </div>
+		    </div>
+
+		    <!-- TERMS MODAL -->
+		    <div class="modal-overlay" id="termsModal">
+		        <div class="modal" style="max-width: 600px;">
+		            <button class="modal-close" onclick="closeModal('termsModal')">&times;</button>
+		            <h2>📜 เงื่อนไขการให้บริการ</h2>
+		            <div class="modal-sub">ThaiApp Market Terms of Service</div>
+		            <div style="font-size:.9rem;color:var(--text-muted);line-height:1.8;max-height:400px;overflow-y:auto;">
+		                <p><strong>1. การใช้งาน</strong> — บริการนี้ให้ใช้สำหรับบุคคลทั่วไป ห้ามนำไปใช้ในทางที่ผิดกฎหมาย</p>
+		                <p><strong>2. การชำระเงิน</strong> — สินค้าทั้งหมดเป็นลิขสิทธิ์ของ ThaiApp Market การชำระเงินผ่านระบบที่กำหนดเท่านั้น</p>
+		                <p><strong>3. การคืนเงิน</strong> — สามารถขอคืนเงินได้ภายใน 7 วันหลังจากซื้อ หากสินค้ามีปัญหาด้านการใช้งาน</p>
+		                <p><strong>4. ข้อมูลส่วนตัว</strong> — เราเก็บข้อมูลเท่าที่จำเป็นต่อการให้บริการ และจะไม่นำไปเผยแพร่ต่อบุคคลที่สาม</p>
+		                <p><strong>5. การยกเลิก</strong> — เราขอสงวนสิทธิ์ในการยกเลิกบริการหากพบการใช้งานที่ผิดเงื่อนไข</p>
+		                <p style="margin-top:12px;">อัปเดตล่าสุด: กรกฎาคม 2026</p>
+		            </div>
+		        </div>
+		    </div>
+
+		    <!-- PRIVACY MODAL -->
+		    <div class="modal-overlay" id="privacyModal">
+		        <div class="modal" style="max-width: 600px;">
+		            <button class="modal-close" onclick="closeModal('privacyModal')">&times;</button>
+		            <h2>🔒 นโยบายความเป็นส่วนตัว</h2>
+		            <div class="modal-sub">วิธีที่เราเก็บและใช้ข้อมูลของคุณ</div>
+		            <div style="font-size:.9rem;color:var(--text-muted);line-height:1.8;max-height:400px;overflow-y:auto;">
+		                <p><strong>1. ข้อมูลที่เก็บ</strong> — ชื่อ, อีเมล, เบอร์โทรศัพท์, ประวัติการสั่งซื้อ</p>
+		                <p><strong>2. การใช้ข้อมูล</strong> — เพื่อดำเนินการสั่งซื้อ, ติดต่อลูกค้า, พัฒนาบริการ</p>
+		                <p><strong>3. การเก็บรักษา</strong> — ข้อมูลของคุณถูกเก็บอย่างปลอดภัยบนระบบ Cloud มาตรฐานสูง</p>
+		                <p><strong>4. บุคคลที่สาม</strong> — เราไม่แชร์ข้อมูลของคุณกับบุคคลภายนอก ยกเว้นตามกฎหมาย</p>
+		                <p><strong>5. สิทธิของคุณ</strong> — คุณสามารถขอให้ลบข้อมูลของคุณได้ทุกเมื่อ โดยติดต่อทีมสนับสนุน</p>
+		                <p style="margin-top:12px;">อัปเดตล่าสุด: กรกฎาคม 2026</p>
+		            </div>
+		        </div>
+		    </div>
+
+			    <!-- ADMIN MODAL -->
     <div class="modal-overlay admin-modal" id="adminModal">
         <div class="modal">
             <button class="modal-close" onclick="closeAdminPanel()">&times;</button>
@@ -2075,9 +2161,17 @@
                 <span class="deco-line"></span>
             </div>
             <h2>จัดการระบบ</h2>
-            <p class="modal-sub">จัดการสินค้าและออเดอร์</p>
+	            <p class="modal-sub">จัดการสินค้าและออเดอร์</p>
 
-            <div class="admin-tabs">
+	            <!-- Dashboard Stats -->
+	            <div class="stats-row" id="adminStats">
+	                <div class="stat-card"><div class="stat-value" id="statProducts">-</div><div class="stat-label">สินค้า</div></div>
+	                <div class="stat-card"><div class="stat-value" id="statOrders">-</div><div class="stat-label">ออเดอร์</div></div>
+	                <div class="stat-card"><div class="stat-value" id="statRevenue">-</div><div class="stat-label">รายได้</div></div>
+	                <div class="stat-card"><div class="stat-value" id="statPending">-</div><div class="stat-label">รอชำระ</div></div>
+	            </div>
+
+	            <div class="admin-tabs">
                 <button class="admin-tab active" onclick="switchAdminTab('products')"><i class="fas fa-box"></i> สินค้า</button>
                 <button class="admin-tab" onclick="switchAdminTab('orders')"><i class="fas fa-receipt"></i> ออเดอร์</button>
             </div>
@@ -2554,11 +2648,11 @@
 	        // ============================================================
 	        function renderApps(apps, containerId) {
 	            const container = document.getElementById(containerId);
-	            container.innerHTML = apps.map((app, index) => `
-	                    <div class="app-card reveal reveal-delay-${Math.min(index % 6 + 1, 6)}">
-	                        <div class="app-card-icon" style="background:${app.imageUrl ? 'transparent' : app.iconBg}">
-	                            ${app.imageUrl ? `<img src="${app.imageUrl}" alt="${app.name}" loading="lazy">` : (app.icon || '📦')}
-	                        </div>
+		            container.innerHTML = apps.map((app, index) => `
+		                    <div class="app-card reveal reveal-delay-${Math.min(index % 6 + 1, 6)}" onclick="openProductDetail(${app.id})" style="cursor:pointer;">
+		                        <div class="app-card-icon" style="background:${app.imageUrl ? 'transparent' : app.iconBg}">
+		                            ${app.imageUrl ? `<img src="${app.imageUrl}" alt="${app.name}" loading="lazy">` : (app.icon || '📦')}
+		                        </div>
 	                        <h3>${app.name}</h3>
 	                        <span class="category-tag">${getCategoryLabel(app.category)}</span>
 	                        <p>${app.desc}</p>
@@ -2571,7 +2665,7 @@
 	                                </div>
 	                                <div class="app-price">${formatPrice(app.price)}</div>
 	                            </div>
-	                            <button class="btn btn-primary btn-sm" onclick="addToCart(${app.id})">
+		                            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();addToCart(${app.id})">
 	                                <i class="fas fa-cart-plus"></i> เพิ่ม
 	                            </button>
 	                        </div>
@@ -3215,10 +3309,93 @@
             container.innerHTML = html;
             footer.style.display = 'block';
             document.getElementById('cartTotalAmount').textContent = formatPrice(total);
-            await updateCartUI();
-        }
+	            await updateCartUI();
+	        }
 
-        // Cart toggle
+	        // ─── Product Detail ─────────────────────────────────
+	        function openProductDetail(productId) {
+	            const product = productsData.find(p => p.id === productId);
+	            if (!product) return;
+	            const content = document.getElementById('productDetailContent');
+	            const stars = '<i class="fas fa-star"></i>'.repeat(Math.floor(product.rating)) + (product.rating % 1 >= 0.5 ? '<i class="fas fa-star-half-alt"></i>' : '');
+	            content.innerHTML = `
+	                <div style="display:flex;gap:20px;flex-wrap:wrap;">
+	                    <div style="flex-shrink:0;">
+	                        <div class="app-card-icon" style="width:120px;height:120px;border-radius:16px;background:${product.imageUrl ? 'transparent' : product.iconBg}">
+	                            ${product.imageUrl ? `<img src="${product.imageUrl}" alt="${product.name}" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">` : (product.icon || '📦')}
+	                        </div>
+	                    </div>
+	                    <div style="flex:1;min-width:200px;">
+	                        <h2 style="font-family:var(--font-heading);color:var(--navy);margin:0 0 4px;">${product.name}</h2>
+	                        <span class="category-tag">${getCategoryLabel(product.category)}</span>
+	                        <div style="margin:8px 0;color:var(--gold);font-size:.9rem;">${stars} <span style="color:var(--text-muted);font-size:.8rem;">(${product.reviews} รีวิว)</span></div>
+	                        <p style="color:var(--text-muted);line-height:1.7;">${product.desc || 'ไม่มีคำอธิบาย'}</p>
+	                        <div style="margin-top:16px;display:flex;gap:12px;align-items:center;">
+	                            <span style="font-family:var(--font-heading);font-size:1.8rem;font-weight:700;color:var(--crimson);">${formatPrice(product.price)}</span>
+	                            <button class="btn btn-primary" onclick="closeProductDetail();addToCart(${product.id})"><i class="fas fa-cart-plus"></i> เพิ่มลงตะกร้า</button>
+	                        </div>
+	                    </div>
+	                </div>
+	            `;
+	            openModal('productDetailModal');
+	        }
+
+		        function closeProductDetail() {
+		            closeModal('productDetailModal');
+		        }
+
+		        // ─── Profile + Order History ───────────────────────
+		        async function openProfile() {
+		            const content = document.getElementById('profileContent');
+		            const session = await getSession();
+		            if (!session) {
+		                content.innerHTML = '<div class="admin-empty"><i class="fas fa-user-slash"></i><p>กรุณาเข้าสู่ระบบก่อน</p></div>';
+		                openModal('profileModal');
+		                return;
+		            }
+		            let html = `
+		                <div class="profile-info">
+		                    <div class="profile-avatar-lg">${session.name?.charAt(0)?.toUpperCase() || '?'}</div>
+		                    <div><strong style="font-size:1.1rem;">${session.name || 'ไม่ระบุ'}</strong><br><span style="color:var(--text-muted);font-size:.9rem;">${session.email || ''}</span></div>
+		                </div>
+		                <h3 style="font-family:var(--font-heading);color:var(--navy);margin-bottom:12px;">📋 ประวัติออเดอร์</h3>
+		                <div id="profileOrders"><div class="admin-empty"><i class="fas fa-spinner fa-spin"></i><p>กำลังโหลด...</p></div></div>
+		            `;
+		            content.innerHTML = html;
+		            openModal('profileModal');
+
+		            // Load orders
+		            try {
+		                let orders = [];
+		                if (supabaseClient) {
+		                    const { data } = await supabaseClient.from('orders').select('*').eq('user_id', session.id).order('created_at', { ascending: false });
+		                    orders = data || [];
+		                } else {
+		                    const allOrders = JSON.parse(localStorage.getItem('thai_app_orders') || '[]');
+		                    orders = allOrders.filter(o => o.id === session.id || o.customer?.email === session.email);
+		                }
+		                const ordersContainer = document.getElementById('profileOrders');
+		                if (orders.length === 0) {
+		                    ordersContainer.innerHTML = '<div class="admin-empty"><i class="fas fa-receipt"></i><p>ยังไม่มีออเดอร์</p></div>';
+		                } else {
+		                    const statusLabels = { pending: '⏳ รอชำระ', paid: '✅ ชำระแล้ว', completed: '📦 ดำเนินการแล้ว', cancelled: '❌ ยกเลิก' };
+		                    ordersContainer.innerHTML = orders.map(o => `
+		                        <div class="order-history-item">
+		                            <div class="order-history-header">
+		                                <strong>${o.order_number}</strong>
+		                                <span class="admin-status ${o.status || 'pending'}">${statusLabels[o.status] || o.status}</span>
+		                            </div>
+		                            <div class="order-history-items">${formatPrice(o.total)} — ${o.payment_method || 'ไม่ระบุ'}</div>
+		                            <div style="font-size:.8rem;color:var(--text-muted);">${new Date(o.created_at).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
+		                        </div>
+		                    `).join('');
+		                }
+		            } catch (e) {
+		                document.getElementById('profileOrders').innerHTML = '<div class="admin-empty"><i class="fas fa-exclamation-triangle"></i><p>โหลดออเดอร์ไม่สำเร็จ</p></div>';
+		            }
+		        }
+
+		        // Cart toggle
         async function toggleCart() {
             const overlay = document.getElementById('cartOverlay');
             const panel = document.getElementById('cartPanel');
@@ -3607,6 +3784,7 @@
 		            document.querySelectorAll('.admin-tab')[1].classList.remove('active');
 		            document.getElementById('adminProductForm').style.display = 'none';
 		            openModal('adminModal');
+		            loadAdminStats();
 		            renderAdminProducts();
 		            renderAdminOrders();
 		        }
@@ -3853,9 +4031,27 @@
 	            }
 	        }
 
-        // --- Orders ----------------------------------------------------
+	        // --- Orders ----------------------------------------------------
 
-        async function renderAdminOrders() {
+	        async function loadAdminStats() {
+	            if (!supabaseClient) return;
+	            try {
+	                const { data: products } = await supabaseClient.from('products').select('id', { count: 'exact', head: true });
+	                const { data: orders, error } = await supabaseClient.from('orders').select('total, status');
+	                if (error) throw error;
+	                const totalOrders = orders?.length || 0;
+	                const totalRevenue = orders?.reduce((sum, o) => sum + parseFloat(o.total || 0), 0) || 0;
+	                const pendingOrders = orders?.filter(o => o.status === 'pending').length || 0;
+	                document.getElementById('statProducts').textContent = products?.length || 0;
+	                document.getElementById('statOrders').textContent = totalOrders;
+	                document.getElementById('statRevenue').textContent = totalRevenue.toLocaleString('th-TH') + ' ฿';
+	                document.getElementById('statPending').textContent = pendingOrders;
+	            } catch (e) {
+	                console.warn('Could not load stats:', e.message);
+	            }
+	        }
+
+	        async function renderAdminOrders() {
             const container = document.getElementById('adminOrdersContainer');
             if (!supabaseClient) {
                 container.innerHTML = '<div class="admin-empty"><i class="fas fa-database"></i><p>Supabase \u0E44\u0E21\u0E48\u0E1E\u0E23\u0E49\u0E2D\u0E21\u0E17\u0E33\u0E07\u0E32\u0E19</p></div>';
