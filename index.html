@@ -1888,7 +1888,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            &copy; 2026 ThaiApp Market. สงวนลิขสิทธิ์ตามกฎหมาย | เว็บขายแอปสไตล์ไทย
+            &copy; 2026 ThaiApp Market. สงวนลิขสิทธิ์ตามกฎหมาย | <span style="cursor:pointer;text-decoration:underline;" onclick="toggleLang()">🌐 ภาษา</span>
         </div>
     </footer>
 
@@ -2103,6 +2103,34 @@
 	            <button class="modal-close" onclick="closeProductDetail()">&times;</button>
 	            <div id="productDetailContent" class="admin-empty"><i class="fas fa-spinner fa-spin"></i><p>กำลังโหลด...</p></div>
 	        </div>
+		    </div>
+
+		    <!-- REVIEW MODAL -->
+		    <div class="modal-overlay" id="reviewModal">
+		        <div class="modal" style="max-width: 480px;">
+		            <button class="modal-close" onclick="closeModal('reviewModal')">&times;</button>
+		            <h2>⭐ รีวิวสินค้า</h2>
+		            <div class="modal-sub">แชร์ประสบการณ์การใช้สินค้า</div>
+		            <div id="reviewFormContent">
+		                <div class="form-group">
+		                    <label>คะแนน</label>
+		                    <div style="display:flex;gap:8px;font-size:1.5rem;color:var(--gold);" id="reviewStars">
+		                        <span onclick="document.getElementById('reviewRating').value=1;updateReviewStars(1)" style="cursor:pointer;">☆</span>
+		                        <span onclick="document.getElementById('reviewRating').value=2;updateReviewStars(2)" style="cursor:pointer;">☆</span>
+		                        <span onclick="document.getElementById('reviewRating').value=3;updateReviewStars(3)" style="cursor:pointer;">☆</span>
+		                        <span onclick="document.getElementById('reviewRating').value=4;updateReviewStars(4)" style="cursor:pointer;">☆</span>
+		                        <span onclick="document.getElementById('reviewRating').value=5;updateReviewStars(5)" style="cursor:pointer;">☆</span>
+		                    </div>
+		                    <input type="hidden" id="reviewRating" value="0">
+		                    <input type="hidden" id="reviewProductId" value="">
+		                </div>
+		                <div class="form-group">
+		                    <label>ความคิดเห็น</label>
+		                    <textarea id="reviewComment" placeholder="เขียนรีวิว..." style="min-height:80px;"></textarea>
+		                </div>
+		                <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="submitReview(parseInt(document.getElementById('reviewProductId').value))"><i class="fas fa-paper-plane"></i> ส่งรีวิว</button>
+		            </div>
+		        </div>
 		    </div>
 
 		    <!-- PROFILE MODAL -->
@@ -3356,32 +3384,71 @@
 	        }
 
 	        // ─── Product Detail ─────────────────────────────────
-	        function openProductDetail(productId) {
-	            const product = productsData.find(p => p.id === productId);
-	            if (!product) return;
-	            const content = document.getElementById('productDetailContent');
-	            const stars = '<i class="fas fa-star"></i>'.repeat(Math.floor(product.rating)) + (product.rating % 1 >= 0.5 ? '<i class="fas fa-star-half-alt"></i>' : '');
-	            content.innerHTML = `
-	                <div style="display:flex;gap:20px;flex-wrap:wrap;">
-	                    <div style="flex-shrink:0;">
-	                        <div class="app-card-icon" style="width:120px;height:120px;border-radius:16px;background:${product.imageUrl ? 'transparent' : product.iconBg}">
-	                            ${product.imageUrl ? `<img src="${product.imageUrl}" alt="${product.name}" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">` : (product.icon || '📦')}
-	                        </div>
-	                    </div>
-	                    <div style="flex:1;min-width:200px;">
-	                        <h2 style="font-family:var(--font-heading);color:var(--navy);margin:0 0 4px;">${product.name}</h2>
-	                        <span class="category-tag">${getCategoryLabel(product.category)}</span>
-	                        <div style="margin:8px 0;color:var(--gold);font-size:.9rem;">${stars} <span style="color:var(--text-muted);font-size:.8rem;">(${product.reviews} รีวิว)</span></div>
-	                        <p style="color:var(--text-muted);line-height:1.7;">${product.desc || 'ไม่มีคำอธิบาย'}</p>
-	                        <div style="margin-top:16px;display:flex;gap:12px;align-items:center;">
-	                            <span style="font-family:var(--font-heading);font-size:1.8rem;font-weight:700;color:var(--crimson);">${formatPrice(product.price)}</span>
-	                            <button class="btn btn-primary" onclick="closeProductDetail();addToCart(${product.id})"><i class="fas fa-cart-plus"></i> เพิ่มลงตะกร้า</button>
-	                        </div>
-	                    </div>
-	                </div>
-	            `;
-	            openModal('productDetailModal');
-	        }
+		        function openProductDetail(productId) {
+		            const product = productsData.find(p => p.id === productId);
+		            if (!product) return;
+		            const content = document.getElementById('productDetailContent');
+		            const stars = '<i class="fas fa-star"></i>'.repeat(Math.floor(product.rating)) + (product.rating % 1 >= 0.5 ? '<i class="fas fa-star-half-alt"></i>' : '');
+		            content.innerHTML = `
+		                <div style="display:flex;gap:20px;flex-wrap:wrap;">
+		                    <div style="flex-shrink:0;">
+		                        <div class="app-card-icon" style="width:120px;height:120px;border-radius:16px;background:${product.imageUrl ? 'transparent' : product.iconBg}">
+		                            ${product.imageUrl ? `<img src="${product.imageUrl}" alt="${product.name}" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">` : (product.icon || '📦')}
+		                        </div>
+		                    </div>
+		                    <div style="flex:1;min-width:200px;">
+		                        <h2 style="font-family:var(--font-heading);color:var(--navy);margin:0 0 4px;">${product.name}</h2>
+		                        <span class="category-tag">${getCategoryLabel(product.category)}</span>
+		                        <div style="margin:8px 0;color:var(--gold);font-size:.9rem;">${stars} <span style="color:var(--text-muted);font-size:.8rem;">(${product.reviews} รีวิว)</span></div>
+		                        <p style="color:var(--text-muted);line-height:1.7;">${product.desc || 'ไม่มีคำอธิบาย'}</p>
+		                        <div style="font-size:.85rem;color:var(--text-muted);margin-bottom:8px;">
+		                            ${product.stock !== undefined ? (product.stock > 0 ? '📦 สินค้าพร้อมส่ง' : '❌ สินค้าหมด') : ''}
+		                            ${product.stock !== undefined && product.stock > 0 && product.stock <= 5 ? `<span style="color:var(--crimson);"> (เหลือ ${product.stock} ชิ้น)</span>` : ''}
+		                        </div>
+		                        <div style="margin-top:16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+		                            <span style="font-family:var(--font-heading);font-size:1.8rem;font-weight:700;color:var(--crimson);">${formatPrice(product.price)}</span>
+		                            <button class="btn btn-primary" onclick="closeProductDetail();addToCart(${product.id})"><i class="fas fa-cart-plus"></i> เพิ่มลงตะกร้า</button>
+		                            <button class="btn btn-outline-gold btn-sm" onclick="event.stopPropagation();openReviewForm(${product.id})"><i class="fas fa-star"></i> รีวิว</button>
+		                        </div>
+		                    </div>
+		                </div>
+		                <div id="productReviews" style="margin-top:20px;border-top:1px solid var(--cream-dark);padding-top:16px;">
+		                    <h3 style="font-family:var(--font-heading);font-size:1rem;color:var(--navy);margin-bottom:8px;">⭐ ความคิดเห็น</h3>
+		                    <div style="font-size:.85rem;color:var(--text-muted);text-align:center;padding:12px;"><i class="fas fa-spinner fa-spin"></i> กำลังโหลด...</div>
+		                </div>
+		            `;
+		            openModal('productDetailModal');
+		            // Load reviews
+		            setTimeout(() => loadReviews(productId).then(result => {
+		                const container = document.getElementById('productReviews');
+		                if (!container) return;
+		                container.innerHTML = '<h3 style="font-family:var(--font-heading);font-size:1rem;color:var(--navy);margin-bottom:8px;">⭐ ความคิดเห็น</h3>';
+		                if (result.count > 0) {
+		                    container.innerHTML += '<div style="margin-bottom:10px;font-size:.9rem;color:var(--text-muted);">เฉลี่ย <strong style="color:var(--gold);font-size:1.1rem;">' + result.avg + '</strong> จาก ' + result.count + ' รีวิว</div>';
+		                    result.data.forEach(r => {
+		                        const rs = '<span style="color:var(--gold);">' + '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating) + '</span>';
+		                        container.innerHTML += '<div style="padding:8px 0;border-bottom:1px solid var(--cream);"><div style="font-size:.85rem;">' + rs + ' <strong>' + escapeHtml(r.profiles?.name || 'ผู้ใช้') + '</strong></div><div style="font-size:.85rem;color:var(--text-muted);">' + escapeHtml(r.comment || '') + '</div><div style="font-size:.75rem;color:var(--text-muted);">' + new Date(r.created_at).toLocaleDateString('th-TH') + '</div></div>';
+		                    });
+		                } else {
+		                    container.innerHTML += '<div style="font-size:.85rem;color:var(--text-muted);padding:8px 0;">ยังไม่มีรีวิว เป็นคนแรกที่รีวิวสิ! 😊</div>';
+		                }
+		                container.innerHTML += '<button class="btn btn-outline-gold btn-sm" style="margin-top:10px;" onclick="openReviewForm(' + productId + ')"><i class="fas fa-star"></i> รีวิวสินค้านี้</button>';
+		            }), 100);
+		        }
+
+		        function openReviewForm(productId) {
+		            document.getElementById('reviewProductId').value = productId;
+		            document.getElementById('reviewRating').value = 0;
+		            document.getElementById('reviewComment').value = '';
+		            updateReviewStars(0);
+		            closeModal('productDetailModal');
+		            openModal('reviewModal');
+		        }
+
+		        function updateReviewStars(rating) {
+		            const spans = document.getElementById('reviewStars').querySelectorAll('span');
+		            spans.forEach((s, i) => s.textContent = i < rating ? '★' : '☆');
+		        }
 
 		        function closeProductDetail() {
 		            closeModal('productDetailModal');
@@ -4304,9 +4371,24 @@
             }
         });
 
-        console.log('🇹🇭 Thai App Market — เว็บขายแอปสไตล์ไทย');
-        console.log('✨ ลายไทยโมเดิร์น + ปุ่มเอฟเฟกต์ Ripple');
-        console.log('🔧 ฟีเจอร์ครบ: สมาชิก, ตะกร้า, ชำระเงิน');
+	        console.log('🇹🇭 Thai App Market — เว็บขายแอปสไตล์ไทย');
+	        console.log('✨ ลายไทยโมเดิร์น + ปุ่มเอฟเฟกต์ Ripple');
+	        console.log('🔧 ฟีเจอร์ครบ: สมาชิก, ตะกร้า, ชำระเงิน');
+
+	        // ─── Basic i18n ────────────────────────────────────
+	        window._lang = 'th';
+	        const LANG = {
+	            th: { addToCart: 'เพิ่มลงตะกร้า', review: 'รีวิว', popular: 'ยอดนิยม', featured: 'แอปแนะนำ', search: 'ค้นหา', login: 'เข้าสู่ระบบ', register: 'สมัครสมาชิก', logout: 'ออกจากระบบ', cart: 'ตะกร้า', checkout: 'ชำระเงิน', total: 'รวม', discount: 'ส่วนลด', stock_avail: 'สินค้าพร้อมส่ง', stock_out: 'สินค้าหมด', product: 'สินค้า', order: 'ออเดอร์', coupon: 'คูปอง', profile: 'โปรไฟล์', admin: 'จัดการระบบ', contact: 'ติดต่อเรา', lang: 'English' },
+	            en: { addToCart: 'Add to Cart', review: 'Review', popular: 'Popular', featured: 'Featured', search: 'Search', login: 'Login', register: 'Register', logout: 'Logout', cart: 'Cart', checkout: 'Checkout', total: 'Total', discount: 'Discount', stock_avail: 'In Stock', stock_out: 'Out of Stock', product: 'Products', order: 'Orders', coupon: 'Coupons', profile: 'Profile', admin: 'Admin', contact: 'Contact Us', lang: 'ไทย' }
+	        };
+	        function __(key) { return LANG[_lang]?.[key] || LANG['th']?.[key] || key; }
+	        function toggleLang() {
+	            _lang = _lang === 'th' ? 'en' : 'th';
+	            document.querySelector('.footer-bottom span').textContent = '🌐 ' + __( 'lang' );
+	            document.getElementById('loginBtn').textContent = __( 'login' );
+	            document.getElementById('adminBtn').querySelector('span').textContent = __( 'admin' );
+	            showToast('🌐 Language: ' + (_lang === 'th' ? 'ไทย' : 'English'), 'info');
+	        }
     </script>
 </body>
 </html>

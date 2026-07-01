@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS public.products (
     rating DECIMAL(2,1) DEFAULT 0,
     reviews INTEGER DEFAULT 0,
     popular BOOLEAN DEFAULT false,
+    stock INTEGER DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -103,6 +104,7 @@ CREATE TABLE IF NOT EXISTS public.orders (
     customer_phone TEXT,
     customer_address TEXT,
     note TEXT,
+    coupon TEXT DEFAULT NULL,
     items JSONB,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -180,7 +182,39 @@ VALUES
      1999, 'ai', 4.9, 421, false)
 ON CONFLICT DO NOTHING;
 
--- ─── 8. Storage Bucket สำหรับรูปสินค้า ────────────────────────
+-- ─── 8. Reviews ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.reviews (
+    id BIGSERIAL PRIMARY KEY,
+    product_id BIGINT REFERENCES public.products(id) ON DELETE CASCADE NOT NULL,
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+    rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    comment TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(product_id, user_id)
+);
+ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "reviews public read" ON public.reviews FOR SELECT USING (true);
+CREATE POLICY "reviews insert own" ON public.reviews FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "reviews manage own" ON public.reviews FOR ALL USING (auth.uid() = user_id);
+
+-- ─── 9. Coupons ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.coupons (
+    id BIGSERIAL PRIMARY KEY,
+    code TEXT UNIQUE NOT NULL,
+    discount_type TEXT NOT NULL CHECK (discount_type IN ('percentage', 'fixed')),
+    discount_value DECIMAL(10,2) NOT NULL,
+    min_order DECIMAL(10,2) DEFAULT 0,
+    max_uses INTEGER DEFAULT NULL,
+    used_count INTEGER DEFAULT 0,
+    expires_at TIMESTAMPTZ DEFAULT NULL,
+    active BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE public.coupons ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "coupons public read" ON public.coupons FOR SELECT USING (true);
+CREATE POLICY "admin manage coupons" ON public.coupons FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+-- ─── 10. Storage Bucket สำหรับรูปสินค้า ──────────────────────
 -- สร้าง Bucket สำหรับรูปสินค้า (public read)
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (

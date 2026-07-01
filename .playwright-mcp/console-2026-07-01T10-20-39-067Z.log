@@ -1,0 +1,18 @@
+[     376ms] [LOG] 🔍 handleOAuthRedirect checking hash... @ https://thaiapp-market.vercel.app/:2155
+[     376ms] [LOG] 📍 hash: (empty) @ https://thaiapp-market.vercel.app/:2157
+[     376ms] [LOG] ❌ No OAuth hash found, skipping @ https://thaiapp-market.vercel.app/:2159
+[     405ms] ReferenceError: Cannot access 'revealObserver' before initialization
+    at https://thaiapp-market.vercel.app/:2490:22
+    at NodeList.forEach (<anonymous>)
+    at renderApps (https://thaiapp-market.vercel.app/:2484:66)
+    at https://thaiapp-market.vercel.app/:2507:9
+[     410ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ https://thaiapp-market.vercel.app/:0
+[     411ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ https://thaiapp-market.vercel.app/:0
+[     667ms] [LOG] 🔗 Supabase connected @ https://thaiapp-market.vercel.app/:2243
+[     668ms] [LOG] 🔐 Auth event: INITIAL_SESSION @ https://thaiapp-market.vercel.app/:2247
+[     881ms] [WARNING] ⚠️ Could not load products from Supabase, using fallback @ https://thaiapp-market.vercel.app/:2384
+[     885ms] ReferenceError: Cannot access 'revealObserver' before initialization
+    at https://thaiapp-market.vercel.app/:2490:22
+    at NodeList.forEach (<anonymous>)
+    at renderApps (https://thaiapp-market.vercel.app/:2484:66)
+    at loadProducts (https://thaiapp-market.vercel.app/:2387:18)

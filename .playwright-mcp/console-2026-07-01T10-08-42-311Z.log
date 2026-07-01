@@ -1,0 +1,11 @@
+[     483ms] [LOG] 🔍 handleOAuthRedirect checking hash... @ https://thaiapp-market.vercel.app/:2155
+[     483ms] [LOG] 📍 hash: (empty) @ https://thaiapp-market.vercel.app/:2157
+[     483ms] [LOG] ❌ No OAuth hash found, skipping @ https://thaiapp-market.vercel.app/:2159
+[     496ms] [LOG] 🇹🇭 Thai App Market — เว็บขายแอปสไตล์ไทย @ https://thaiapp-market.vercel.app/:3796
+[     496ms] [LOG] ✨ ลายไทยโมเดิร์น + ปุ่มเอฟเฟกต์ Ripple @ https://thaiapp-market.vercel.app/:3797
+[     496ms] [LOG] 🔧 ฟีเจอร์ครบ: สมาชิก, ตะกร้า, ชำระเงิน @ https://thaiapp-market.vercel.app/:3798
+[     684ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ https://thaiapp-market.vercel.app/:0
+[     684ms] [VERBOSE] [DOM] Password field is not contained in a form: (More info: https://goo.gl/9p2vKq) %o @ https://thaiapp-market.vercel.app/:0
+[     906ms] [LOG] 🔗 Supabase connected @ https://thaiapp-market.vercel.app/:2243
+[     909ms] [LOG] 🔐 Auth event: INITIAL_SESSION @ https://thaiapp-market.vercel.app/:2247
+[    1379ms] [LOG] 📦 Products loaded: 12 @ https://thaiapp-market.vercel.app/:2382

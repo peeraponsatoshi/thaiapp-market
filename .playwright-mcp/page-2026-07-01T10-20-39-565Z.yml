@@ -1,0 +1,249 @@
+- generic [active] [ref=f1e1]:
+  - navigation [ref=f1e2]:
+    - link " ThaiApp Market" [ref=f1e3] [cursor=pointer]:
+      - /url: "#"
+      - generic [ref=f1e4]: 
+      - generic [ref=f1e5]: ThaiApp Market
+    - list [ref=f1e6]:
+      - listitem [ref=f1e7]:
+        - link "แอปแนะนำ" [ref=f1e8] [cursor=pointer]:
+          - /url: "#featured"
+      - listitem [ref=f1e9]:
+        - link "หมวดหมู่" [ref=f1e10] [cursor=pointer]:
+          - /url: "#categories"
+      - listitem [ref=f1e11]:
+        - link "ยอดนิยม" [ref=f1e12] [cursor=pointer]:
+          - /url: "#popular"
+      - listitem [ref=f1e13]:
+        - link "รีวิว" [ref=f1e14] [cursor=pointer]:
+          - /url: "#testimonials"
+    - generic [ref=f1e15]:
+      - button " 0" [ref=f1e16] [cursor=pointer]:
+        - generic [ref=f1e17]: 
+        - generic: "0"
+      - button "เข้าสู่ระบบ" [ref=f1e18] [cursor=pointer]
+      - text:  
+  - generic [ref=f1e20]:
+    - generic [ref=f1e21]:
+      - generic [ref=f1e22]: 
+      - text: แพลตฟอร์มเครื่องมือ AI สำหรับคนไทย
+    - heading "สร้างคอนเทนต์ ด้วย AI สไตล์ไทย" [level=1] [ref=f1e23]:
+      - text: สร้างคอนเทนต์
+      - text: ด้วย AI สไตล์ไทย
+    - paragraph [ref=f1e24]: รวมเครื่องมือ AI สุดล้ำสำหรับครีเอเตอร์ไทย ตั้งแต่ TTS เสียงไทย โคลนเสียง ตัดต่อคลิป ทำซับไตเติล ไปจนถึงสร้างคลิปลงตะกร้า ครบจบในที่เดียว
+    - generic [ref=f1e25]:
+      - button " ดูแอปทั้งหมด" [ref=f1e26] [cursor=pointer]:
+        - generic [ref=f1e27]: 
+        - text: ดูแอปทั้งหมด
+      - button " แอปยอดนิยม" [ref=f1e28] [cursor=pointer]:
+        - generic [ref=f1e29]: 
+        - text: แอปยอดนิยม
+  - generic [ref=f1e31]:
+    - heading "🔥 แอปแนะนำ" [level=2] [ref=f1e32]
+    - paragraph [ref=f1e33]: เครื่องมือ AI คุณภาพสูง สำหรับครีเอเตอร์ไทยโดยเฉพาะ
+    - generic [ref=f1e38]:
+      - generic [ref=f1e39]:
+        - generic [ref=f1e40]: 🎙️
+        - heading "เสียงไทย TTS Pro" [level=3] [ref=f1e41]
+        - generic [ref=f1e42]: TTS / เสียง
+        - paragraph [ref=f1e43]: แปลงข้อความภาษาไทยเป็นเสียงสังเคราะห์คุณภาพสูง เลือกเสียงได้ 50+ เสียง ทั้งชาย หญิง และเด็ก ปรับระดับอารมณ์ได้
+        - generic [ref=f1e44]:
+          - generic [ref=f1e45]:
+            - generic [ref=f1e46]:
+              - generic [ref=f1e47]: 
+              - generic [ref=f1e48]: 
+              - generic [ref=f1e49]: 
+              - generic [ref=f1e50]: 
+              - generic [ref=f1e51]: 
+              - generic [ref=f1e52]: (234)
+            - generic [ref=f1e53]: 499 บาท
+          - button " เพิ่ม" [ref=f1e54] [cursor=pointer]:
+            - generic [ref=f1e55]: 
+            - text: เพิ่ม
+      - generic [ref=f1e56]:
+        - generic [ref=f1e57]: 🎬
+        - heading "คลิปโปร AI" [level=3] [ref=f1e58]
+        - generic [ref=f1e59]: ตัดต่อคลิป
+        - paragraph [ref=f1e60]: ตัดต่อวิดีโออัตโนมัติด้วย AI มีเทมเพลตสวยๆ พร้อมใช้ ลากวางง่าย ตัดต่อไว มีเอฟเฟกต์ให้เลือกมากมาย
+        - generic [ref=f1e61]:
+          - generic [ref=f1e62]:
+            - generic [ref=f1e63]:
+              - generic [ref=f1e64]: 
+              - generic [ref=f1e65]: 
+              - generic [ref=f1e66]: 
+              - generic [ref=f1e67]: 
+              - generic [ref=f1e68]: 
+              - generic [ref=f1e69]: (189)
+            - generic [ref=f1e70]: 799 บาท
+          - button " เพิ่ม" [ref=f1e71] [cursor=pointer]:
+            - generic [ref=f1e72]: 
+            - text: เพิ่ม
+      - generic [ref=f1e73]:
+        - generic [ref=f1e74]: 🗣️
+        - heading "VoiceClone AI" [level=3] [ref=f1e75]
+        - generic [ref=f1e76]: AI ทั่วไป
+        - paragraph [ref=f1e77]: โคลนเสียงภาษาไทยด้วย AI เพียงอัปโหลดเสียงตัวอย่าง 5 นาที ก็ได้เสียงที่เหมือนจริง ใช้กับ TTS ได้
+        - generic [ref=f1e78]:
+          - generic [ref=f1e79]:
+            - generic [ref=f1e80]:
+              - generic [ref=f1e81]: 
+              - generic [ref=f1e82]: 
+              - generic [ref=f1e83]: 
+              - generic [ref=f1e84]: 
+              - generic [ref=f1e85]: 
+              - generic [ref=f1e86]: (156)
+            - generic [ref=f1e87]: 1,299 บาท
+          - button " เพิ่ม" [ref=f1e88] [cursor=pointer]:
+            - generic [ref=f1e89]: 
+            - text: เพิ่ม
+      - generic [ref=f1e90]:
+        - generic [ref=f1e91]: 📝
+        - heading "SubThai Maker" [level=3] [ref=f1e92]
+        - generic [ref=f1e93]: ทำซับไตเติล
+        - paragraph [ref=f1e94]: ทำซับไตเติลอัตโนมัติ รองรับทั้งไทยและอังกฤษ แปลภาษาได้ทันที Export ได้หลายฟอร์แมต
+        - generic [ref=f1e95]:
+          - generic [ref=f1e96]:
+            - generic [ref=f1e97]:
+              - generic [ref=f1e98]: 
+              - generic [ref=f1e99]: 
+              - generic [ref=f1e100]: 
+              - generic [ref=f1e101]: 
+              - generic [ref=f1e102]: 
+              - generic [ref=f1e103]: (312)
+            - generic [ref=f1e104]: 299 บาท
+          - button " เพิ่ม" [ref=f1e105] [cursor=pointer]:
+            - generic [ref=f1e106]: 
+            - text: เพิ่ม
+      - generic [ref=f1e107]:
+        - generic [ref=f1e108]: 🛍️
+        - heading "TikTok Cut Pro" [level=3] [ref=f1e109]
+        - generic [ref=f1e110]: คลิป TikTok
+        - paragraph [ref=f1e111]: สร้างคลิปลงตะกร้า TikTok ได้ใน 5 นาที มีเทมเพลตขายของ พร้อมเพลงและเอฟเฟกต์มาแรง
+        - generic [ref=f1e112]:
+          - generic [ref=f1e113]:
+            - generic [ref=f1e114]:
+              - generic [ref=f1e115]: 
+              - generic [ref=f1e116]: 
+              - generic [ref=f1e117]: 
+              - generic [ref=f1e118]: 
+              - generic [ref=f1e119]: 
+              - generic [ref=f1e120]: (278)
+            - generic [ref=f1e121]: 599 บาท
+          - button " เพิ่ม" [ref=f1e122] [cursor=pointer]:
+            - generic [ref=f1e123]: 
+            - text: เพิ่ม
+      - generic [ref=f1e124]:
+        - generic [ref=f1e125]: 🤖
+        - heading "AI Content Studio" [level=3] [ref=f1e126]
+        - generic [ref=f1e127]: AI ทั่วไป
+        - paragraph [ref=f1e128]: รวมเครื่องมือ AI ครบวงจร ทั้งเขียนบทความ สร้างรูป ตัดต่อคลิป ทำเสียง ทำซับ ครบในแพลตฟอร์มเดียว
+        - generic [ref=f1e129]:
+          - generic [ref=f1e130]:
+            - generic [ref=f1e131]:
+              - generic [ref=f1e132]: 
+              - generic [ref=f1e133]: 
+              - generic [ref=f1e134]: 
+              - generic [ref=f1e135]: 
+              - generic [ref=f1e136]: 
+              - generic [ref=f1e137]: (421)
+            - generic [ref=f1e138]: 1,999 บาท
+          - button " เพิ่ม" [ref=f1e139] [cursor=pointer]:
+            - generic [ref=f1e140]: 
+            - text: เพิ่ม
+  - generic [ref=f1e142]:
+    - heading "📂 หมวดหมู่" [level=2] [ref=f1e143]
+    - paragraph [ref=f1e144]: เลือกหมวดหมู่ที่ใช่สำหรับคุณ
+    - generic [ref=f1e149]:
+      - generic [ref=f1e150] [cursor=pointer]:
+        - generic [ref=f1e151]: 
+        - generic [ref=f1e152]: ทั้งหมด
+      - generic [ref=f1e153] [cursor=pointer]:
+        - generic [ref=f1e154]: 
+        - generic [ref=f1e155]: TTS / เสียง
+      - generic [ref=f1e156] [cursor=pointer]:
+        - generic [ref=f1e157]: 
+        - generic [ref=f1e158]: ตัดต่อคลิป
+      - generic [ref=f1e159] [cursor=pointer]:
+        - generic [ref=f1e160]: 
+        - generic [ref=f1e161]: AI ทั่วไป
+      - generic [ref=f1e162] [cursor=pointer]:
+        - generic [ref=f1e163]: 
+        - generic [ref=f1e164]: ทำซับไตเติล
+      - generic [ref=f1e165] [cursor=pointer]:
+        - generic [ref=f1e166]: 
+        - generic [ref=f1e167]: คลิป TikTok
+  - generic [ref=f1e169]:
+    - heading "⭐ แอปยอดนิยม" [level=2] [ref=f1e170]
+    - paragraph [ref=f1e171]: ครีเอเตอร์ไทยเลือกใช้มากที่สุด
+  - generic [ref=f1e177]:
+    - heading "💬 รีวิวจากลูกค้า" [level=2] [ref=f1e178]
+    - paragraph [ref=f1e179]: เสียงจริงจากผู้ใช้จริง
+  - contentinfo [ref=f1e184]:
+    - generic [ref=f1e185]:
+      - generic [ref=f1e186]:
+        - heading " ThaiApp Market" [level=4] [ref=f1e187]:
+          - generic [ref=f1e188]: 
+          - text: ThaiApp Market
+        - paragraph [ref=f1e189]: แพลตฟอร์มรวมเครื่องมือ AI สำหรับครีเอเตอร์ไทย ครบจบในที่เดียว
+        - generic [ref=f1e190]:
+          - link "Facebook" [ref=f1e191] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f1e192]: 
+          - link "Line" [ref=f1e193] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f1e194]: 
+          - link "YouTube" [ref=f1e195] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f1e196]: 
+          - link "TikTok" [ref=f1e197] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=f1e198]: 
+      - generic [ref=f1e199]:
+        - heading "สินค้า" [level=4] [ref=f1e200]
+        - link "แอปแนะนำ" [ref=f1e201] [cursor=pointer]:
+          - /url: "#featured"
+        - link "แอปยอดนิยม" [ref=f1e202] [cursor=pointer]:
+          - /url: "#popular"
+        - link "หมวดหมู่" [ref=f1e203] [cursor=pointer]:
+          - /url: "#categories"
+        - link "โปรโมชั่น" [ref=f1e204] [cursor=pointer]:
+          - /url: "#"
+      - generic [ref=f1e205]:
+        - heading "ช่วยเหลือ" [level=4] [ref=f1e206]
+        - link "วิธีการชำระเงิน" [ref=f1e207] [cursor=pointer]:
+          - /url: "#"
+        - link "การติดตั้งแอป" [ref=f1e208] [cursor=pointer]:
+          - /url: "#"
+        - link "นโยบายคืนเงิน" [ref=f1e209] [cursor=pointer]:
+          - /url: "#"
+        - link "คำถามที่พบบ่อย" [ref=f1e210] [cursor=pointer]:
+          - /url: "#"
+      - generic [ref=f1e211]:
+        - heading "ติดต่อเรา" [level=4] [ref=f1e212]
+        - paragraph [ref=f1e213]:
+          - generic [ref=f1e214]: 
+          - text: support@thaiappmarket.com
+        - paragraph [ref=f1e215]:
+          - generic [ref=f1e216]: 
+          - text: 02-123-4567
+        - paragraph [ref=f1e217]:
+          - generic [ref=f1e218]: 
+          - text: กรุงเทพฯ ประเทศไทย
+        - paragraph [ref=f1e219]:
+          - generic [ref=f1e220]: 
+          - text: จันทร์-ศุกร์ 09:00-18:00
+    - generic [ref=f1e221]: © 2026 ThaiApp Market. สงวนลิขสิทธิ์ตามกฎหมาย | เว็บขายแอปสไตล์ไทย
+  - text:                +     
+  - generic [ref=f1e222]:
+    - generic [ref=f1e223]:
+      - heading "🛒 ตะกร้าสินค้า (0 รายการ)" [level=2] [ref=f1e224]
+      - button "×" [ref=f1e225] [cursor=pointer]
+    - generic [ref=f1e227]:
+      - generic [ref=f1e228]: 
+      - paragraph [ref=f1e229]:
+        - text: ตะกร้าว่างเปล่า
+        - text: เลือกสินค้าและเพิ่มลงตะกร้าเลย!
+    - text: 
+  - generic [ref=f1e230]:
+    - generic [ref=f1e231]: 
+    - generic [ref=f1e232]: สำเร็จ!
