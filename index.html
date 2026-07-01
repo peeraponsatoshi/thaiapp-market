@@ -2020,10 +2020,19 @@
                     <label>ที่อยู่</label>
                     <textarea id="checkoutAddress" placeholder="ที่อยู่สำหรับจัดส่ง"></textarea>
                 </div>
-                <div class="form-group">
-                    <label>หมายเหตุ (ไม่บังคับ)</label>
-                    <textarea id="checkoutNote" placeholder="ข้อความเพิ่มเติม..." style="min-height:50px;"></textarea>
-                </div>
+		                <div class="form-group">
+		                    <label>หมายเหตุ (ไม่บังคับ)</label>
+		                    <textarea id="checkoutNote" placeholder="ข้อความเพิ่มเติม..." style="min-height:50px;"></textarea>
+		                </div>
+
+		                <div class="form-group">
+		                    <label>มีคูปองส่วนลด?</label>
+		                    <div style="display:flex;gap:8px;">
+		                        <input type="text" id="couponInput" placeholder="ใส่รหัสคูปอง" style="flex:1;">
+		                        <button class="btn btn-sm btn-primary" onclick="applyCoupon()" style="flex-shrink:0;">ใช้</button>
+		                    </div>
+		                    <div id="couponResult" style="font-size:.85rem;margin-top:4px;"></div>
+		                </div>
 
                 <div style="margin-bottom:16px;">
                     <label style="display:block;font-size:0.85rem;font-weight:600;margin-bottom:8px;color:var(--text-dark);">ช่องทางชำระเงิน</label>
@@ -2047,20 +2056,24 @@
                     </div>
                 </div>
 
-                <div style="background:var(--cream);padding:16px;border-radius:var(--radius-sm);margin-bottom:18px;">
-                    <div style="display:flex;justify-content:space-between;font-size:0.9rem;color:var(--text-muted);margin-bottom:4px;">
-                        <span>ยอดรวมสินค้า</span>
-                        <span id="checkoutSubtotal">0 บาท</span>
-                    </div>
-                    <div style="display:flex;justify-content:space-between;font-size:0.9rem;color:var(--text-muted);margin-bottom:4px;">
-                        <span>ค่าธรรมเนียม</span>
-                        <span>ฟรี</span>
-                    </div>
-                    <div style="display:flex;justify-content:space-between;font-family:var(--font-heading);font-size:1.2rem;font-weight:700;color:var(--crimson);margin-top:8px;padding-top:8px;border-top:1px solid var(--cream-dark);">
-                        <span>ยอดรวมทั้งสิ้น</span>
-                        <span id="checkoutTotal">0 บาท</span>
-                    </div>
-                </div>
+	                <div style="background:var(--cream);padding:16px;border-radius:var(--radius-sm);margin-bottom:18px;">
+	                    <div style="display:flex;justify-content:space-between;font-size:0.9rem;color:var(--text-muted);margin-bottom:4px;">
+	                        <span>ยอดรวมสินค้า</span>
+	                        <span id="checkoutSubtotal">0 บาท</span>
+	                    </div>
+	                    <div style="display:flex;justify-content:space-between;font-size:0.9rem;color:var(--text-muted);margin-bottom:4px;">
+	                        <span>ค่าธรรมเนียม</span>
+	                        <span>ฟรี</span>
+	                    </div>
+	                    <div id="checkoutDiscountRow" style="display:none;justify-content:space-between;font-size:0.9rem;color:#22c55e;margin-bottom:4px;">
+	                        <span>ส่วนลด</span>
+	                        <span id="checkoutDiscount">0 บาท</span>
+	                    </div>
+	                    <div style="display:flex;justify-content:space-between;font-family:var(--font-heading);font-size:1.2rem;font-weight:700;color:var(--crimson);margin-top:8px;padding-top:8px;border-top:1px solid var(--cream-dark);">
+	                        <span>ยอดรวมทั้งสิ้น</span>
+	                        <span id="checkoutTotal">0 บาท</span>
+	                    </div>
+	                </div>
 
                 <button class="btn btn-crimson" style="width:100%;justify-content:center;" onclick="handleCheckout()">
                     <i class="fas fa-check-circle"></i> ยืนยันการสั่งซื้อ
@@ -2171,10 +2184,11 @@
 	                <div class="stat-card"><div class="stat-value" id="statPending">-</div><div class="stat-label">รอชำระ</div></div>
 	            </div>
 
-	            <div class="admin-tabs">
-                <button class="admin-tab active" onclick="switchAdminTab('products')"><i class="fas fa-box"></i> สินค้า</button>
-                <button class="admin-tab" onclick="switchAdminTab('orders')"><i class="fas fa-receipt"></i> ออเดอร์</button>
-            </div>
+		            <div class="admin-tabs">
+		                <button class="admin-tab active" onclick="switchAdminTab('products')"><i class="fas fa-box"></i> สินค้า</button>
+		                <button class="admin-tab" onclick="switchAdminTab('orders')"><i class="fas fa-receipt"></i> ออเดอร์</button>
+		                <button class="admin-tab" onclick="switchAdminTab('coupons')"><i class="fas fa-tag"></i> คูปอง</button>
+		            </div>
 
             <div id="adminProductsTab">
                 <div class="admin-toolbar">
@@ -2184,10 +2198,37 @@
                 <div id="adminProductsContainer"><div class="admin-empty"><i class="fas fa-box-open"></i><p>กำลังโหลด...</p></div></div>
             </div>
 
-            <div id="adminOrdersTab" style="display:none;">
-                <div class="admin-toolbar"><h3>รายการออเดอร์</h3></div>
-                <div id="adminOrdersContainer"><div class="admin-empty"><i class="fas fa-receipt"></i><p>กำลังโหลด...</p></div></div>
-            </div>
+	            <div id="adminOrdersTab" style="display:none;">
+	                <div class="admin-toolbar"><h3>รายการออเดอร์</h3></div>
+	                <div id="adminOrdersContainer"><div class="admin-empty"><i class="fas fa-receipt"></i><p>กำลังโหลด...</p></div></div>
+	            </div>
+
+	            <div id="adminCouponsTab" style="display:none;">
+	                <div class="admin-toolbar">
+	                    <h3>คูปองส่วนลด</h3>
+	                    <button class="btn btn-primary btn-sm" onclick="showCouponForm()"><i class="fas fa-plus"></i> เพิ่มคูปอง</button>
+	                </div>
+	                <div id="adminCouponsContainer"><div class="admin-empty"><i class="fas fa-tag"></i><p>กำลังโหลด...</p></div></div>
+	                <div id="adminCouponForm" style="display:none;margin-top:12px;border-top:1px solid var(--cream-dark);padding-top:16px;">
+	                    <div class="product-form-grid">
+	                        <div class="form-group"><label>รหัสคูปอง</label><input type="text" id="cfCode" placeholder="เช่น SALE50"></div>
+	                        <div class="form-group"><label>ประเภท</label>
+	                            <select id="cfType">
+	                                <option value="percentage">เปอร์เซ็นต์ (%)</option>
+	                                <option value="fixed">จำนวนเงิน (บาท)</option>
+	                            </select>
+	                        </div>
+	                        <div class="form-group"><label>มูลค่า</label><input type="number" id="cfValue" placeholder="50" min="0" step="0.01"></div>
+	                        <div class="form-group"><label>ยอดขั้นต่ำ</label><input type="number" id="cfMinOrder" placeholder="0" min="0" value="0"></div>
+	                        <div class="form-group"><label>ใช้ได้สูงสุด</label><input type="number" id="cfMaxUses" placeholder="ไม่จำกัด" min="0"></div>
+	                        <div class="form-group"><label>หมดอายุ</label><input type="date" id="cfExpires"></div>
+	                    </div>
+	                    <div style="display:flex;gap:10px;margin-top:8px;">
+	                        <button class="btn btn-primary btn-sm" onclick="saveCoupon()"><i class="fas fa-save"></i> บันทึกคูปอง</button>
+	                        <button class="btn btn-sm" style="border:1px solid var(--cream-dark);" onclick="cancelCouponForm()">ยกเลิก</button>
+	                    </div>
+	                </div>
+	            </div>
 
             <div id="adminProductForm" style="display:none;">
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
@@ -3459,10 +3500,14 @@
                 }
             }
 
-            // Calculate totals
-            const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-            document.getElementById('checkoutSubtotal').textContent = formatPrice(total);
-            document.getElementById('checkoutTotal').textContent = formatPrice(total);
+	            // Calculate totals
+	            const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+	            const discount = getDiscountAmount(total);
+	            const finalTotal = Math.max(0, total - discount);
+	            document.getElementById('checkoutSubtotal').textContent = formatPrice(total);
+	            document.getElementById('checkoutDiscountRow').style.display = discount > 0 ? 'flex' : 'none';
+	            document.getElementById('checkoutDiscount').textContent = '-' + formatPrice(discount);
+	            document.getElementById('checkoutTotal').textContent = formatPrice(finalTotal);
 
             document.getElementById('orderSuccess').style.display = 'none';
             document.getElementById('checkoutForm').style.display = 'block';
@@ -3494,23 +3539,26 @@
             const selectedPayment = document.querySelector('.payment-method.selected');
             const paymentMethod = selectedPayment ? selectedPayment.querySelector('span').textContent : 'ไม่ระบุ';
 
-            const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-            const orderNumber = generateId();
+	            const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+	            const discount = getDiscountAmount(total);
+	            const finalTotal = Math.max(0, total - discount);
+	            const orderNumber = generateId();
 
             // ── Supabase Mode: Save order ──
             if (supabaseClient && currentUserId) {
                 try {
-                    const { error: orderError } = await supabaseClient.from('orders').insert({
-                        order_number: orderNumber,
-                        user_id: currentUserId,
-                        total: total,
-                        status: 'pending',
-                        payment_method: paymentMethod,
-                        customer_name: name,
-                        customer_phone: phone,
-                        customer_address: address,
-                        note: document.getElementById('checkoutNote').value.trim() || null,
-                        items: JSON.stringify(cart.map(i => ({
+	                    const { error: orderError } = await supabaseClient.from('orders').insert({
+	                        order_number: orderNumber,
+	                        user_id: currentUserId,
+	                        total: finalTotal,
+	                        status: 'pending',
+	                        payment_method: paymentMethod,
+	                        customer_name: name,
+	                        customer_phone: phone,
+	                        customer_address: address,
+	                        note: document.getElementById('checkoutNote').value.trim() || null,
+	                        coupon: _appliedCoupon?.code || null,
+	                        items: JSON.stringify(cart.map(i => ({
                             product_id: i.id,
                             product_name: i.name,
                             price: i.price,
@@ -3795,20 +3843,27 @@
             closeModal('adminModal');
         }
 
-        function switchAdminTab(tab) {
-            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-            if (tab === 'products') {
-                document.querySelectorAll('.admin-tab')[0].classList.add('active');
-                document.getElementById('adminProductsTab').style.display = 'block';
-                document.getElementById('adminOrdersTab').style.display = 'none';
-                renderAdminProducts();
-            } else {
-                document.querySelectorAll('.admin-tab')[1].classList.add('active');
-                document.getElementById('adminProductsTab').style.display = 'none';
-                document.getElementById('adminOrdersTab').style.display = 'block';
-                renderAdminOrders();
-            }
-        }
+	        function switchAdminTab(tab) {
+	            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+	            document.getElementById('adminProductsTab').style.display = 'none';
+	            document.getElementById('adminOrdersTab').style.display = 'none';
+	            document.getElementById('adminCouponsTab').style.display = 'none';
+	            document.getElementById('adminProductForm').style.display = 'none';
+	            document.getElementById('adminCouponForm').style.display = 'none';
+	            if (tab === 'products') {
+	                document.querySelectorAll('.admin-tab')[0].classList.add('active');
+	                document.getElementById('adminProductsTab').style.display = 'block';
+	                renderAdminProducts();
+	            } else if (tab === 'orders') {
+	                document.querySelectorAll('.admin-tab')[1].classList.add('active');
+	                document.getElementById('adminOrdersTab').style.display = 'block';
+	                renderAdminOrders();
+	            } else if (tab === 'coupons') {
+	                document.querySelectorAll('.admin-tab')[2].classList.add('active');
+	                document.getElementById('adminCouponsTab').style.display = 'block';
+	                renderAdminCoupons();
+	            }
+	        }
 
         // --- Products --------------------------------------------------
 
@@ -4108,7 +4163,134 @@
             }
         }
 
-        // KEYBOARD SHORTCUT
+	        // --- Coupons ----------------------------------------------------
+
+	        let _editingCouponId = null;
+
+	        async function renderAdminCoupons() {
+	            const container = document.getElementById('adminCouponsContainer');
+	            if (!supabaseClient) { container.innerHTML = '<div class="admin-empty"><i class="fas fa-database"></i><p>Supabase ไม่พร้อมทำงาน</p></div>'; return; }
+	            try {
+	                const { data, error } = await supabaseClient.from('coupons').select('*').order('created_at', { ascending: false });
+	                if (error) throw error;
+	                if (!data || data.length === 0) { container.innerHTML = '<div class="admin-empty"><i class="fas fa-tag"></i><p>ยังไม่มีคูปอง</p></div>'; return; }
+	                let html = '<table class="admin-table"><thead><tr><th>รหัส</th><th>ประเภท</th><th>มูลค่า</th><th>ใช้แล้ว</th><th>หมดอายุ</th><th>สถานะ</th><th>จัดการ</th></tr></thead><tbody>';
+	                data.forEach(c => {
+	                    const expired = c.expires_at && new Date(c.expires_at) < new Date();
+	                    html += '<tr>' +
+	                        '<td><strong>' + escapeHtml(c.code) + '</strong></td>' +
+	                        '<td>' + (c.discount_type === 'percentage' ? '%' : '฿') + '</td>' +
+	                        '<td>' + (c.discount_type === 'percentage' ? c.discount_value + '%' : formatPrice(c.discount_value)) + '</td>' +
+	                        '<td>' + (c.used_count || 0) + (c.max_uses ? '/' + c.max_uses : '') + '</td>' +
+	                        '<td style="font-size:.8rem;">' + (c.expires_at ? new Date(c.expires_at).toLocaleDateString('th-TH') : '-') + '</td>' +
+	                        '<td>' + (expired ? '<span class="admin-status cancelled">หมดอายุ</span>' : c.active ? '<span class="admin-status paid"> active</span>' : '<span class="admin-status cancelled">ปิด</span>') + '</td>' +
+	                        '<td><button class="btn btn-sm" style="padding:4px 10px;background:var(--cream);color:var(--navy);border:none;" onclick="toggleCoupon(' + c.id + ')"><i class="fas fa-power-off"></i></button></td></tr>';
+	                });
+	                html += '</tbody></table>';
+	                container.innerHTML = html;
+	            } catch (e) { container.innerHTML = '<div class="admin-empty"><i class="fas fa-exclamation-triangle"></i><p>โหลดไม่สำเร็จ: ' + e.message + '</p></div>'; }
+	        }
+
+	        function showCouponForm() {
+	            _editingCouponId = null;
+	            document.getElementById('adminCouponForm').style.display = 'block';
+	            document.getElementById('cfCode').value = '';
+	            document.getElementById('cfType').value = 'percentage';
+	            document.getElementById('cfValue').value = '';
+	            document.getElementById('cfMinOrder').value = '0';
+	            document.getElementById('cfMaxUses').value = '';
+	            document.getElementById('cfExpires').value = '';
+	        }
+
+	        function cancelCouponForm() { document.getElementById('adminCouponForm').style.display = 'none'; }
+
+	        async function saveCoupon() {
+	            const code = document.getElementById('cfCode').value.trim().toUpperCase();
+	            const discount_type = document.getElementById('cfType').value;
+	            const discount_value = parseFloat(document.getElementById('cfValue').value);
+	            const min_order = parseFloat(document.getElementById('cfMinOrder').value) || 0;
+	            const maxUses = parseInt(document.getElementById('cfMaxUses').value) || null;
+	            const expires_at = document.getElementById('cfExpires').value || null;
+	            if (!code || !discount_value) { showToast('กรุณากรอกรหัสและมูลค่าคูปอง', 'error'); return; }
+	            try {
+	                const { error } = await supabaseClient.from('coupons').insert({ code, discount_type, discount_value, min_order, max_uses: maxUses, expires_at: expires_at ? new Date(expires_at).toISOString() : null });
+	                if (error) throw error;
+	                showToast('เพิ่มคูปองสำเร็จ', 'success');
+	                cancelCouponForm();
+	                renderAdminCoupons();
+	            } catch (e) { showToast('ไม่สำเร็จ: ' + e.message, 'error'); }
+	        }
+
+	        async function toggleCoupon(id) {
+	            try {
+	                const { data: c } = await supabaseClient.from('coupons').select('active').eq('id', id).single();
+	                await supabaseClient.from('coupons').update({ active: !c.active }).eq('id', id);
+	                renderAdminCoupons();
+	            } catch (e) { showToast(' error: ' + e.message, 'error'); }
+	        }
+
+	        // ─── Checkout Coupon ─────────────────────────────────
+	        let _appliedCoupon = null;
+
+	        async function applyCoupon() {
+	            const code = document.getElementById('couponInput').value.trim().toUpperCase();
+	            const result = document.getElementById('couponResult');
+	            if (!code) { result.innerHTML = '<span style="color:var(--crimson);">กรุณาใส่รหัสคูปอง</span>'; return; }
+	            if (!supabaseClient) { result.innerHTML = '<span style="color:var(--crimson);">ระบบคูปองต้องใช้ Supabase</span>'; return; }
+	            try {
+	                const { data, error } = await supabaseClient.from('coupons').select('*').eq('code', code).single();
+	                if (error || !data) { result.innerHTML = '<span style="color:var(--crimson);">ไม่พบรหัสคูปองนี้</span>'; return; }
+	                if (!data.active) { result.innerHTML = '<span style="color:var(--crimson);">คูปองนี้ถูกปิดใช้งาน</span>'; return; }
+	                if (data.expires_at && new Date(data.expires_at) < new Date()) { result.innerHTML = '<span style="color:var(--crimson);">คูปองหมดอายุแล้ว</span>'; return; }
+	                if (data.max_uses && data.used_count >= data.max_uses) { result.innerHTML = '<span style="color:var(--crimson);">คูปองใช้ครบจำนวนแล้ว</span>'; return; }
+	                const cart = await getCart();
+	                const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+	                if (subtotal < data.min_order) { result.innerHTML = '<span style="color:var(--crimson);">ยอดสั่งซื้อขั้นต่ำ ' + formatPrice(data.min_order) + '</span>'; return; }
+	                _appliedCoupon = data;
+	                result.innerHTML = '<span style="color:#22c55e;">✅ คูปอง ' + data.code + ' • ' + (data.discount_type === 'percentage' ? data.discount_value + '%' : formatPrice(data.discount_value)) + '</span>';
+	                updateCheckoutTotal();
+	                showToast('ใช้คูปอง ' + data.code + ' สำเร็จ!', 'success');
+	            } catch (e) { result.innerHTML = '<span style="color:var(--crimson);"> error: ' + e.message + '</span>'; }
+	        }
+
+	        function getDiscountAmount(subtotal) {
+	            if (!_appliedCoupon) return 0;
+	            return _appliedCoupon.discount_type === 'percentage'
+	                ? subtotal * _appliedCoupon.discount_value / 100
+	                : Math.min(_appliedCoupon.discount_value, subtotal);
+	        }
+
+	        // ─── Review System ───────────────────────────────────
+	        async function loadReviews(productId) {
+	            if (!supabaseClient) return { data: [], avg: 0, count: 0 };
+	            try {
+	                const { data } = await supabaseClient.from('reviews').select('*, profiles!reviews_user_id_fkey(name)').eq('product_id', productId).order('created_at', { ascending: false });
+	                if (data) {
+	                    const avg = data.reduce((s, r) => s + r.rating, 0) / (data.length || 1);
+	                    return { data, avg: Math.round(avg * 10) / 10, count: data.length };
+	                }
+	                return { data: [], avg: 0, count: 0 };
+	            } catch (e) { return { data: [], avg: 0, count: 0 }; }
+	        }
+
+	        async function submitReview(productId) {
+	            if (!supabaseClient || !currentUserId) { showToast('กรุณาเข้าสู่ระบบก่อนรีวิว', 'error'); return; }
+	            const rating = parseInt(document.getElementById('reviewRating').value);
+	            const comment = document.getElementById('reviewComment').value.trim();
+	            if (!rating) { showToast('กรุณาเลือกคะแนน', 'error'); return; }
+	            try {
+	                const { error } = await supabaseClient.from('reviews').upsert({
+	                    product_id: productId, user_id: currentUserId, rating, comment
+	                }, { onConflict: 'product_id, user_id' });
+	                if (error) throw error;
+	                showToast('ส่งรีวิวสำเร็จ 🎉', 'success');
+	                closeModal('reviewModal');
+	                const detail = document.getElementById('productDetailContent');
+	                if (detail) openProductDetail(productId);
+	            } catch (e) { showToast('ส่งรีวิวไม่สำเร็จ: ' + e.message, 'error'); }
+	        }
+
+	        // KEYBOARD SHORTCUT
         // ============================================================
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
