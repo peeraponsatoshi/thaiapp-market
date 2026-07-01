@@ -2452,9 +2452,26 @@
             });
         });
 
-        // ============================================================
-        // RENDER APPS
-        // ============================================================
+	        // ============================================================
+	        // SCROLL REVEAL (Intersection Observer)
+	        // ============================================================
+	        const revealObserver = new IntersectionObserver((entries) => {
+	            entries.forEach(entry => {
+	                if (entry.isIntersecting) {
+	                    entry.target.classList.add('visible');
+	                }
+	            });
+	        }, {
+	            threshold: 0.1,
+	            rootMargin: '0px 0px -50px 0px'
+	        });
+
+	        // Observe elements that exist on page load
+	        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+	        // ============================================================
+	        // RENDER APPS
+	        // ============================================================
 	        function renderApps(apps, containerId) {
 	            const container = document.getElementById(containerId);
 	            container.innerHTML = apps.map((app, index) => `
@@ -2545,24 +2562,8 @@
         }
         renderTestimonials();
 
-        // ============================================================
-        // SCROLL REVEAL (Intersection Observer)
-        // ============================================================
-        const revealObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
-            });
-        }, {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        });
-
-        document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
-
-        // ============================================================
-        // TOAST NOTIFICATION
+	        // ============================================================
+	        // TOAST NOTIFICATION
         // ============================================================
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
