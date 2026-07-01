@@ -3121,7 +3121,7 @@
 	        let _pendingImageFile = null;       // ไฟล์ที่เลือกใหม่ (รอ upload ตอน save)
 	        let _pendingImageRemove = false;    // ผู้ใช้ต้องการลบรูป
 
-	        function previewProductImage(event) {
+	        async function previewProductImage(event) {
 	            const file = event.target.files?.[0];
 	            if (!file) return;
 	            if (file.size > 5 * 1024 * 1024) {
@@ -3129,21 +3129,103 @@
 	                event.target.value = '';
 	                return;
 	            }
-	            _pendingImageFile = file;
-	            _pendingImageRemove = false;
-	            const reader = new FileReader();
-	            reader.onload = function(e) {
+
+	            const originalSize = file.size;
+	            const isGif = file.type === 'image/gif';
+
+	            // ถ้าเป็น GIF ข้ามการบีบอัด (เดี๋ยวเสีย animation)
+	            if (isGif) {
+	                _pendingImageFile = file;
+	                _pendingImageRemove = false;
+	                const reader = new FileReader();
+	                reader.onload = function(e) {
+	                    showPreview(e.target.result);
+	                };
+	                reader.readAsDataURL(file);
+	                return;
+	            }
+
+	            try {
+	                // อ่านไฟล์ → สร้าง Image element
+	                const img = await new Promise((resolve, reject) => {
+	                    const reader = new FileReader();
+	                    reader.onload = () => {
+	                        const i = new Image();
+	                        i.onload = () => resolve(i);
+	                        i.onerror = reject;
+	                        i.src = reader.result;
+	                    };
+	                    reader.onerror = reject;
+	                    reader.readAsDataURL(file);
+	                });
+
+	                // คำนวณขนาดใหม่ (max 800px)
+	                const MAX_W = 800;
+	                const MAX_H = 800;
+	                let { width, height } = img;
+	                if (width > MAX_W || height > MAX_H) {
+	                    const ratio = Math.min(MAX_W / width, MAX_H / height);
+	                    width = Math.round(width * ratio);
+	                    height = Math.round(height * ratio);
+	                }
+
+	                // วาดลง Canvas → WebP quality 0.8
+	                const canvas = document.createElement('canvas');
+	                canvas.width = width;
+	                canvas.height = height;
+	                const ctx = canvas.getContext('2d');
+	                ctx.drawImage(img, 0, 0, width, height);
+
+	                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', 0.8));
+	                if (!blob) throw new Error('Canvas toBlob failed');
+
+	                // แปลง Blob → File สำหรับอัปโหลด
+	                const ext = 'webp';
+	                const compressedFile = new File([blob], file.name.replace(/\.[^.]+$/, '') + '.' + ext, {
+	                    type: 'image/webp'
+	                });
+
+	                // แสดง preview (ใช้ dataURL ของ canvas แทน)
+	                const previewUrl = canvas.toDataURL('image/webp', 0.8);
+
+	                // แจ้งขนาดที่บีบ
+	                const savedPct = Math.round((1 - blob.size / originalSize) * 100);
+	                if (savedPct > 0) {
+	                    showToast(`📦 บีบรูป: ${formatFileSize(originalSize)} → ${formatFileSize(blob.size)} (ลด ${savedPct}%)`, 'info');
+	                }
+
+	                _pendingImageFile = compressedFile;
+	                _pendingImageRemove = false;
+	                showPreview(previewUrl);
+	            } catch (e) {
+	                console.warn('Image compression failed, using original:', e.message);
+	                // Fallback: ใช้ไฟล์เดิม
+	                _pendingImageFile = file;
+	                _pendingImageRemove = false;
+	                const reader = new FileReader();
+	                reader.onload = function(e) {
+	                    showPreview(e.target.result);
+	                };
+	                reader.readAsDataURL(file);
+	            }
+
+	            function showPreview(src) {
 	                const preview = document.getElementById('pfImagePreview');
 	                const placeholder = document.getElementById('pfImagePlaceholder');
 	                const area = document.getElementById('pfImageArea');
 	                const removeBtn = document.getElementById('pfImageRemove');
-	                preview.src = e.target.result;
+	                preview.src = src;
 	                preview.style.display = 'block';
 	                placeholder.style.display = 'none';
 	                area.classList.add('has-image');
 	                removeBtn.style.display = 'flex';
-	            };
-	            reader.readAsDataURL(file);
+	            }
+	        }
+
+	        function formatFileSize(bytes) {
+	            if (bytes < 1024) return bytes + ' B';
+	            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+	            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 	        }
 
 	        function removeProductImage() {
