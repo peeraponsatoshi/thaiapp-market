@@ -611,17 +611,26 @@
             transform: scaleX(1);
         }
 
-        .app-card-icon {
-            width: 56px;
-            height: 56px;
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            margin-bottom: 16px;
-            color: white;
-        }
+	        .app-card-icon {
+	            width: 56px;
+	            height: 56px;
+	            border-radius: 14px;
+	            display: flex;
+	            align-items: center;
+	            justify-content: center;
+	            font-size: 1.5rem;
+	            margin-bottom: 16px;
+	            color: white;
+	            overflow: hidden;
+	            flex-shrink: 0;
+	        }
+	        .app-card-icon img {
+	            width: 100%;
+	            height: 100%;
+	            object-fit: cover;
+	            border-radius: 14px;
+	        }
+	        .app-card-image { width:100%;height:100%;object-fit:cover;border-radius:14px; }
 
         .app-card h3 {
             font-family: var(--font-heading);
@@ -1137,16 +1146,19 @@
             padding: 14px 0;
             border-bottom: 1px solid var(--cream);
         }
-        .cart-item-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            color: white;
-            flex-shrink: 0;
+	        .cart-item-icon {
+	            width: 48px;
+	            height: 48px;
+	            border-radius: 12px;
+	            display: flex;
+	            align-items: center;
+	            justify-content: center;
+	            font-size: 1.2rem;
+	            color: white;
+	            flex-shrink: 0;
+	            overflow: hidden;
+	        }
+	        .cart-item-icon img { width:100%;height:100%;object-fit:cover;border-radius:12px; }
         }
         .cart-item-info {
             flex: 1;
@@ -1411,9 +1423,64 @@
         .admin-empty i { font-size:2.5rem;margin-bottom:12px;opacity:.4; }
         .admin-toolbar { display:flex;justify-content:space-between;align-items:center;margin-bottom:16px; }
         .admin-toolbar h3 { font-family:var(--font-heading);font-weight:600;color:var(--navy); }
-        .admin-thumb { width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:1rem; }
+        .admin-thumb { width:36px;height:36px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;overflow:hidden; }
+        .admin-thumb img { width:100%;height:100%;object-fit:cover;border-radius:8px; }
         .product-form-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
         .product-form-grid .full-width { grid-column:1 / -1; }
+
+        /* --- Image Upload --- */
+        .image-upload-area {
+            border: 2px dashed var(--cream-dark);
+            border-radius: var(--radius-sm);
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            background: var(--warm-white);
+            position: relative;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .image-upload-area:hover { border-color: var(--gold); background: rgba(212,160,23,.04); }
+        .image-upload-area.has-image { border-style: solid; padding: 8px; }
+        .image-upload-area input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .image-upload-area .upload-placeholder i { font-size: 2rem; color: var(--text-muted); margin-bottom: 8px; }
+        .image-upload-area .upload-placeholder p { color: var(--text-muted); font-size: .85rem; margin: 0; }
+        .image-upload-area .upload-placeholder small { color: var(--text-muted); font-size: .75rem; opacity: .7; }
+        .image-preview {
+            max-width: 100%;
+            max-height: 180px;
+            border-radius: 6px;
+            object-fit: contain;
+        }
+        .image-remove-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: var(--crimson);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            z-index: 2;
+        }
+        .image-remove-btn:hover { background: var(--crimson-dark); transform: scale(1.1); }
+
         @media (max-width:768px) { .admin-modal .modal { max-width:100% !important;padding:20px 16px; } .admin-table { font-size:.8rem; } .admin-table th,.admin-table td { padding:8px 6px; } .product-form-grid { grid-template-columns:1fr; } }
 
     </style>
@@ -1874,23 +1941,35 @@
                     <button class="btn btn-sm" style="background:none;border:1px solid var(--cream-dark);padding:6px 12px;" onclick="cancelProductForm()"><i class="fas fa-arrow-left"></i> กลับ</button>
                     <h3 style="font-family:var(--font-heading);font-weight:600;color:var(--navy);" id="productFormTitle">เพิ่มสินค้าใหม่</h3>
                 </div>
-                <div class="product-form-grid">
-                    <div class="form-group"><label>ชื่อสินค้า</label><input type="text" id="pfName" placeholder="ชื่อสินค้า"></div>
-                    <div class="form-group"><label>หมวดหมู่</label>
-                        <select id="pfCategory">
-                            <option value="tts">TTS / เสียง</option>
-                            <option value="video">ตัดต่อคลิป</option>
-                            <option value="ai">AI ทั่วไป</option>
-                            <option value="subtitle">ทำซับไตเติล</option>
-                            <option value="tiktok">คลิป TikTok</option>
-                        </select>
-                    </div>
-                    <div class="form-group"><label>ราคา (บาท)</label><input type="number" id="pfPrice" placeholder="ราคา" min="0"></div>
-                    <div class="form-group"><label>Emoji Icon</label><input type="text" id="pfIcon" placeholder="เช่น"></div>
-                    <div class="form-group"><label>Gradient</label><input type="text" id="pfIconBg" placeholder="linear-gradient(...)"></div>
-                    <div class="form-group"><label>Rating</label><input type="number" id="pfRating" placeholder="4.8" step="0.1" min="0" max="5"></div>
-                    <div class="form-group full-width"><label>รายละเอียด</label><textarea id="pfDesc" placeholder="รายละเอียดสินค้า"></textarea></div>
-                </div>
+	                <div class="product-form-grid">
+	                    <div class="form-group"><label>ชื่อสินค้า</label><input type="text" id="pfName" placeholder="ชื่อสินค้า"></div>
+	                    <div class="form-group"><label>หมวดหมู่</label>
+	                        <select id="pfCategory">
+	                            <option value="tts">TTS / เสียง</option>
+	                            <option value="video">ตัดต่อคลิป</option>
+	                            <option value="ai">AI ทั่วไป</option>
+	                            <option value="subtitle">ทำซับไตเติล</option>
+	                            <option value="tiktok">คลิป TikTok</option>
+	                        </select>
+	                    </div>
+	                    <div class="form-group"><label>ราคา (บาท)</label><input type="number" id="pfPrice" placeholder="ราคา" min="0"></div>
+	                    <div class="form-group full-width"><label>รูปสินค้า</label>
+	                        <div class="image-upload-area" id="pfImageArea">
+	                            <input type="file" id="pfImage" accept="image/jpeg,image/png,image/webp,image/gif" onchange="previewProductImage(event)">
+	                            <div class="upload-placeholder" id="pfImagePlaceholder">
+	                                <i class="fas fa-cloud-upload-alt"></i>
+	                                <p>คลิกเพื่อเลือกรูปสินค้า</p>
+	                                <small>รองรับ JPG, PNG, WebP, GIF (สูงสุด 5MB)</small>
+	                            </div>
+	                            <img class="image-preview" id="pfImagePreview" style="display:none;" alt="Preview">
+	                            <button type="button" class="image-remove-btn" id="pfImageRemove" style="display:none;" onclick="removeProductImage()" title="ลบรูป">×</button>
+	                        </div>
+	                    </div>
+	                    <div class="form-group"><label>Emoji Fallback</label><input type="text" id="pfIcon" placeholder="เช่น 🎙️ (ใช้เมื่อไม่มีรูป)"></div>
+	                    <div class="form-group"><label>Gradient BG</label><input type="text" id="pfIconBg" placeholder="linear-gradient(...)"></div>
+	                    <div class="form-group"><label>Rating</label><input type="number" id="pfRating" placeholder="4.8" step="0.1" min="0" max="5"></div>
+	                    <div class="form-group full-width"><label>รายละเอียด</label><textarea id="pfDesc" placeholder="รายละเอียดสินค้า"></textarea></div>
+	                </div>
                 <div style="display:flex;gap:10px;margin-top:8px;">
                     <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="saveProduct()"><i class="fas fa-save"></i> บันทึก</button>
                     <button class="btn btn-secondary" style="flex:1;justify-content:center;border:1px solid var(--cream-dark);color:var(--text-muted);" onclick="cancelProductForm()">ยกเลิก</button>
@@ -2159,6 +2238,7 @@
                         desc: p.description,
                         icon: p.icon,
                         iconBg: p.icon_bg,
+                        imageUrl: p.image_url,
                         price: p.price,
                         category: p.category,
                         rating: p.rating,
@@ -2245,8 +2325,8 @@
             const container = document.getElementById(containerId);
             container.innerHTML = apps.map((app, index) => `
                     <div class="app-card reveal reveal-delay-${Math.min(index % 6 + 1, 6)}">
-                        <div class="app-card-icon" style="background:${app.iconBg}">
-                            ${app.icon}
+                        <div class="app-card-icon" style="background:${app.imageUrl ? 'transparent' : app.iconBg}">
+                            ${app.imageUrl ? `<img src="${app.imageUrl}" alt="${app.name}" loading="lazy">` : (app.icon || '📦')}
                         </div>
                         <h3>${app.name}</h3>
                         <span class="category-tag">${getCategoryLabel(app.category)}</span>
@@ -2462,6 +2542,7 @@
                         price: item.products?.price || 0,
                         icon: item.products?.icon || '📦',
                         iconBg: item.products?.icon_bg || 'linear-gradient(135deg, #667eea, #764ba2)',
+                        imageUrl: item.products?.image_url,
                         qty: item.quantity
                     }));
                 } catch (e) {
@@ -2597,20 +2678,21 @@
                         }
                         return;
                     }
-                    if (data?.user) {
-                        // Upsert profile (ป้องกัน conflict กับ trigger auto-create)
-                        await supabaseClient.from('profiles').upsert({
-                            id: data.user.id,
-                            name,
-                            phone,
-                            email
-                        }).maybeSingle();
+		                    if (data?.user) {
+		                        // Upsert profile (ป้องกัน conflict กับ trigger auto-create)
+		                        await supabaseClient.from('profiles').upsert({
+		                            id: data.user.id,
+		                            name,
+		                            phone,
+		                            email
+		                        }).maybeSingle();
 
-                        currentUserId = data.user.id;
-                        updateUIForLoggedIn({ id: data.user.id, name, email });
-                        closeModal('authModal');
-                        showToast('สมัครสมาชิกสำเร็จ! ยินดีต้อนรับ ' + name + ' 🎉');
-                    }
+		                        currentUserId = data.user.id;
+		                        const role = await fetchUserRole(data.user.id);
+		                        updateUIForLoggedIn({ id: data.user.id, name, email, role });
+		                        closeModal('authModal');
+		                        showToast('สมัครสมาชิกสำเร็จ! ยินดีต้อนรับ ' + name + ' 🎉');
+		                    }
                 } catch (e) {
                     showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
                 }
@@ -2634,41 +2716,56 @@
             showToast('สมัครสมาชิกสำเร็จ! ยินดีต้อนรับ ' + name + ' 🎉');
         }
 
-        async function handleLogin() {
-            clearAuthErrors();
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            let valid = true;
+		        async function fetchUserRole(userId) {
+		            if (!supabaseClient || !userId) return 'user';
+		            try {
+		                const { data } = await supabaseClient
+		                    .from('profiles')
+		                    .select('role')
+		                    .eq('id', userId)
+		                    .single();
+		                return data?.role || 'user';
+		            } catch (e) {
+		                return 'user';
+		            }
+		        }
 
-            if (!email || !email.includes('@')) { document.getElementById('loginEmailGroup').classList.add('error');
-                valid = false; }
-            if (!password) { document.getElementById('loginPassGroup').classList.add('error');
-                valid = false; }
+		        async function handleLogin() {
+		            clearAuthErrors();
+		            const email = document.getElementById('loginEmail').value.trim();
+		            const password = document.getElementById('loginPassword').value;
+		            let valid = true;
 
-            if (!valid) return;
+		            if (!email || !email.includes('@')) { document.getElementById('loginEmailGroup').classList.add('error');
+		                valid = false; }
+		            if (!password) { document.getElementById('loginPassGroup').classList.add('error');
+		                valid = false; }
 
-            // ── Supabase Mode ──
-            if (supabaseClient) {
-                try {
-                    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-                    if (error) {
-                        document.getElementById('loginEmailGroup').classList.add('error');
-                        document.querySelector('#loginEmailGroup .error-text').textContent = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
-                        document.getElementById('loginPassGroup').classList.add('error');
-                        return;
-                    }
-                    if (data?.user) {
-                        currentUserId = data.user.id;
-                        const name = data.user.user_metadata?.name || data.user.email?.split('@')[0];
-                        updateUIForLoggedIn({ id: data.user.id, name, email: data.user.email });
-                        closeModal('authModal');
-                        showToast('เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับกลับ ' + name + ' 👋');
-                    }
-                } catch (e) {
-                    showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
-                }
-                return;
-            }
+		            if (!valid) return;
+
+		            // ── Supabase Mode ──
+		            if (supabaseClient) {
+		                try {
+		                    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+		                    if (error) {
+		                        document.getElementById('loginEmailGroup').classList.add('error');
+		                        document.querySelector('#loginEmailGroup .error-text').textContent = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+		                        document.getElementById('loginPassGroup').classList.add('error');
+		                        return;
+		                    }
+		                    if (data?.user) {
+		                        currentUserId = data.user.id;
+		                        const name = data.user.user_metadata?.name || data.user.email?.split('@')[0];
+		                        const role = await fetchUserRole(data.user.id);
+		                        updateUIForLoggedIn({ id: data.user.id, name, email: data.user.email, role });
+		                        closeModal('authModal');
+		                        showToast('เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับกลับ ' + name + ' 👋');
+		                    }
+		                } catch (e) {
+		                    showToast('เกิดข้อผิดพลาด: ' + e.message, 'error');
+		                }
+		                return;
+		            }
 
             // ── localStorage Mode ──
             const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
@@ -2721,22 +2818,24 @@
             }
         }
 
-        async function checkSession() {
-            // ✅ ถ้ามี OAuth user ที่รออัปเดต (เซฟจาก handleOAuthRedirect)
-            if (window._pendingOAuthUser) {
-                const user = window._pendingOAuthUser;
-                window._pendingOAuthUser = null;
-                const name = user.user_metadata?.full_name
-                            || user.user_metadata?.name
-                            || user.email?.split('@')[0];
-                updateUIForLoggedIn({
-                    id: user.id,
-                    name: name,
-                    email: user.email
-                });
-                showToast('เข้าสู่ระบบด้วย Google สำเร็จ! 👋');
-                return;
-            }
+		        async function checkSession() {
+		            // ✅ ถ้ามี OAuth user ที่รออัปเดต (เซฟจาก handleOAuthRedirect)
+		            if (window._pendingOAuthUser) {
+		                const user = window._pendingOAuthUser;
+		                window._pendingOAuthUser = null;
+		                const name = user.user_metadata?.full_name
+		                            || user.user_metadata?.name
+		                            || user.email?.split('@')[0];
+		                const role = await fetchUserRole(user.id);
+		                updateUIForLoggedIn({
+		                    id: user.id,
+		                    name: name,
+		                    email: user.email,
+		                    role: role
+		                });
+		                showToast('เข้าสู่ระบบด้วย Google สำเร็จ! 👋');
+		                return;
+		            }
 
             // normal session check (สำหรับ refresh หน้าปกติ)
             const session = await getSession();
@@ -2834,8 +2933,8 @@
                 total += itemTotal;
                 html += `
                         <div class="cart-item">
-                            <div class="cart-item-icon" style="background:${item.iconBg}">
-                                ${item.icon}
+                            <div class="cart-item-icon" style="background:${item.imageUrl ? 'transparent' : item.iconBg}">
+                                ${item.imageUrl ? `<img src="${item.imageUrl}" alt="${item.name}">` : item.icon}
                             </div>
                             <div class="cart-item-info">
                                 <h4>${item.name}</h4>
@@ -3014,20 +3113,109 @@
 
         // ============================================================
 
-        // ============================================================
-        // ADMIN DASHBOARD
-        // ============================================================
+	        // ============================================================
+	        // ADMIN DASHBOARD
+	        // ============================================================
 
-        function openAdminPanel() {
-            document.getElementById('adminProductsTab').style.display = 'block';
-            document.getElementById('adminOrdersTab').style.display = 'none';
-            document.querySelectorAll('.admin-tab')[0].classList.add('active');
-            document.querySelectorAll('.admin-tab')[1].classList.remove('active');
-            document.getElementById('adminProductForm').style.display = 'none';
-            openModal('adminModal');
-            renderAdminProducts();
-            renderAdminOrders();
-        }
+	        // ─── Image Upload Helpers ────────────────────────────────
+	        let _pendingImageFile = null;       // ไฟล์ที่เลือกใหม่ (รอ upload ตอน save)
+	        let _pendingImageRemove = false;    // ผู้ใช้ต้องการลบรูป
+
+	        function previewProductImage(event) {
+	            const file = event.target.files?.[0];
+	            if (!file) return;
+	            if (file.size > 5 * 1024 * 1024) {
+	                showToast('รูปต้องมีขนาดไม่เกิน 5MB', 'error');
+	                event.target.value = '';
+	                return;
+	            }
+	            _pendingImageFile = file;
+	            _pendingImageRemove = false;
+	            const reader = new FileReader();
+	            reader.onload = function(e) {
+	                const preview = document.getElementById('pfImagePreview');
+	                const placeholder = document.getElementById('pfImagePlaceholder');
+	                const area = document.getElementById('pfImageArea');
+	                const removeBtn = document.getElementById('pfImageRemove');
+	                preview.src = e.target.result;
+	                preview.style.display = 'block';
+	                placeholder.style.display = 'none';
+	                area.classList.add('has-image');
+	                removeBtn.style.display = 'flex';
+	            };
+	            reader.readAsDataURL(file);
+	        }
+
+	        function removeProductImage() {
+	            _pendingImageFile = null;
+	            _pendingImageRemove = true;
+	            const input = document.getElementById('pfImage');
+	            const preview = document.getElementById('pfImagePreview');
+	            const placeholder = document.getElementById('pfImagePlaceholder');
+	            const area = document.getElementById('pfImageArea');
+	            const removeBtn = document.getElementById('pfImageRemove');
+	            input.value = '';
+	            preview.style.display = 'none';
+	            preview.src = '';
+	            placeholder.style.display = 'block';
+	            area.classList.remove('has-image');
+	            removeBtn.style.display = 'none';
+	        }
+
+	        async function uploadProductImage(file, productId) {
+	            if (!file || !productId || !supabaseClient) return null;
+	            const ext = file.name.split('.').pop().toLowerCase();
+	            const fileName = `${Date.now()}-${Math.random().toString(36).substr(2, 8)}.${ext}`;
+	            const filePath = `${productId}/${fileName}`;
+	            try {
+	                const { error } = await supabaseClient.storage
+	                    .from('product-images')
+	                    .upload(filePath, file, {
+	                        cacheControl: '3600',
+	                        upsert: true
+	                    });
+	                if (error) throw error;
+	                const { data: { publicUrl } } = supabaseClient.storage
+	                    .from('product-images')
+	                    .getPublicUrl(filePath);
+	                return publicUrl;
+	            } catch (e) {
+	                console.error('Image upload error:', e.message);
+	                throw e;
+	            }
+	        }
+
+	        async function deleteStorageImage(imageUrl) {
+	            if (!imageUrl || !supabaseClient) return;
+	            // Extract path from URL: .../product-images/{path}
+	            const bucketBase = supabaseClient.storage.from('product-images').getPublicUrl('').data.publicUrl;
+	            if (!imageUrl.startsWith(bucketBase)) return;
+	            const filePath = imageUrl.substring(bucketBase.length);
+	            if (!filePath) return;
+	            try {
+	                await supabaseClient.storage.from('product-images').remove([filePath]);
+	            } catch (e) {
+	                console.warn('Could not delete old image:', e.message);
+	            }
+	        }
+
+		        function getProductImageHtml(imageUrl, icon, iconBg) {
+		            if (imageUrl) {
+		                return `<img src="${imageUrl}" alt="" class="app-card-image" loading="lazy">`;
+		            }
+		            return icon || '📦';
+		        }
+
+		        function openAdminPanel() {
+		            document.getElementById('adminProductsTab').style.display = 'block';
+		            document.getElementById('adminOrdersTab').style.display = 'none';
+		            document.querySelectorAll('.admin-tab')[0].classList.add('active');
+		            document.querySelectorAll('.admin-tab')[1].classList.remove('active');
+		            document.getElementById('adminProductForm').style.display = 'none';
+		            openModal('adminModal');
+		            renderAdminProducts();
+		            renderAdminOrders();
+		        }
 
         function closeAdminPanel() {
             closeModal('adminModal');
@@ -3066,7 +3254,7 @@
                 let html = '<table class="admin-table"><thead><tr><th>\u0E44\u0E2D\u0E04\u0E2D\u0E19</th><th>\u0E0A\u0E37\u0E48\u0E2D</th><th>\u0E2B\u0E21\u0E27\u0E14\u0E2B\u0E21\u0E39\u0E48</th><th>\u0E23\u0E32\u0E04\u0E32</th><th>\u0E04\u0E30\u0E41\u0E19\u0E19</th><th>\u0E22\u0E2D\u0E14\u0E19\u0E34\u0E22\u0E21</th><th>\u0E08\u0E31\u0E14\u0E01\u0E32\u0E23</th></tr></thead><tbody>';
                 data.forEach(p => {
                     html += '<tr>' +
-                        '<td><div class="admin-thumb" style="background:' + (p.icon_bg || '#eee') + '">' + (p.icon || '\uD83D\uDCE6') + '</div></td>' +
+                        '<td><div class="admin-thumb" style="background:' + (p.image_url ? 'transparent' : p.icon_bg || '#eee') + '">' + (p.image_url ? '<img src="' + p.image_url + '" alt="">' : p.icon || '\uD83D\uDCE6') + '</div></td>' +
                         '<td><strong>' + escapeHtml(p.name) + '</strong></td>' +
                         '<td>' + getCategoryLabel(p.category) + '</td>' +
                         '<td>' + formatPrice(p.price) + '</td>' +
@@ -3094,105 +3282,173 @@
 
         let _editingProductId = null;
 
-        async function showProductForm(productId) {
-            _editingProductId = null;
-            document.getElementById('adminProductsTab').style.display = 'none';
-            document.getElementById('adminOrdersTab').style.display = 'none';
-            document.getElementById('adminProductForm').style.display = 'block';
+	        async function showProductForm(productId) {
+	            _editingProductId = null;
+	            _pendingImageFile = null;
+	            _pendingImageRemove = false;
+	            document.getElementById('adminProductsTab').style.display = 'none';
+	            document.getElementById('adminOrdersTab').style.display = 'none';
+	            document.getElementById('adminProductForm').style.display = 'block';
 
-            if (productId) {
-                document.getElementById('productFormTitle').textContent = '\u0E41\u0E01\u0E49\u0E44\u0E02\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32';
-                try {
-                    const { data, error } = await supabaseClient.from('products').select('*').eq('id', productId).single();
-                    if (error) throw error;
-                    if (data) {
-                        _editingProductId = data.id;
-                        document.getElementById('pfName').value = data.name || '';
-                        document.getElementById('pfCategory').value = data.category || 'tts';
-                        document.getElementById('pfPrice').value = data.price || '';
-                        document.getElementById('pfIcon').value = data.icon || '';
-                        document.getElementById('pfIconBg').value = data.icon_bg || '';
-                        document.getElementById('pfRating').value = data.rating || '';
-                        document.getElementById('pfDesc').value = data.description || '';
-                    }
-                } catch (e) {
-                    showToast('\u0E42\u0E2B\u0E25\u0E14\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08', 'error');
-                    cancelProductForm();
-                }
-            } else {
-                document.getElementById('productFormTitle').textContent = '\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E43\u0E2B\u0E21\u0E48';
-                document.getElementById('pfName').value = '';
-                document.getElementById('pfCategory').value = 'tts';
-                document.getElementById('pfPrice').value = '';
-                document.getElementById('pfIcon').value = '';
-                document.getElementById('pfIconBg').value = '';
-                document.getElementById('pfRating').value = '';
-                document.getElementById('pfDesc').value = '';
-            }
-        }
+	            // Reset image preview
+	            const preview = document.getElementById('pfImagePreview');
+	            const placeholder = document.getElementById('pfImagePlaceholder');
+	            const area = document.getElementById('pfImageArea');
+	            const removeBtn = document.getElementById('pfImageRemove');
+	            const fileInput = document.getElementById('pfImage');
+	            fileInput.value = '';
+	            preview.style.display = 'none';
+	            preview.src = '';
+	            placeholder.style.display = 'block';
+	            area.classList.remove('has-image');
+	            removeBtn.style.display = 'none';
 
-        function cancelProductForm() {
-            _editingProductId = null;
-            document.getElementById('adminProductForm').style.display = 'none';
-            document.getElementById('adminProductsTab').style.display = 'block';
-        }
+	            if (productId) {
+	                document.getElementById('productFormTitle').textContent = '\u0E41\u0E01\u0E49\u0E44\u0E02\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32';
+	                try {
+	                    const { data, error } = await supabaseClient.from('products').select('*').eq('id', productId).single();
+	                    if (error) throw error;
+	                    if (data) {
+	                        _editingProductId = data.id;
+	                        document.getElementById('pfName').value = data.name || '';
+	                        document.getElementById('pfCategory').value = data.category || 'tts';
+	                        document.getElementById('pfPrice').value = data.price || '';
+	                        document.getElementById('pfIcon').value = data.icon || '';
+	                        document.getElementById('pfIconBg').value = data.icon_bg || '';
+	                        document.getElementById('pfRating').value = data.rating || '';
+	                        document.getElementById('pfDesc').value = data.description || '';
 
-        async function saveProduct() {
-            const name = document.getElementById('pfName').value.trim();
-            const category = document.getElementById('pfCategory').value;
-            const price = parseInt(document.getElementById('pfPrice').value);
-            const icon = document.getElementById('pfIcon').value.trim();
-            const iconBg = document.getElementById('pfIconBg').value.trim();
-            const rating = parseFloat(document.getElementById('pfRating').value) || 0;
-            const description = document.getElementById('pfDesc').value.trim();
+	                        // Show existing image if any
+	                        if (data.image_url) {
+	                            preview.src = data.image_url;
+	                            preview.style.display = 'block';
+	                            placeholder.style.display = 'none';
+	                            area.classList.add('has-image');
+	                            removeBtn.style.display = 'flex';
+	                        }
+	                    }
+	                } catch (e) {
+	                    showToast('\u0E42\u0E2B\u0E25\u0E14\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08', 'error');
+	                    cancelProductForm();
+	                }
+	            } else {
+	                document.getElementById('productFormTitle').textContent = '\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E43\u0E2B\u0E21\u0E48';
+	                document.getElementById('pfName').value = '';
+	                document.getElementById('pfCategory').value = 'tts';
+	                document.getElementById('pfPrice').value = '';
+	                document.getElementById('pfIcon').value = '';
+	                document.getElementById('pfIconBg').value = '';
+	                document.getElementById('pfRating').value = '';
+	                document.getElementById('pfDesc').value = '';
+	            }
+	        }
 
-            if (!name || !price) {
-                showToast('\u0E01\u0E23\u0E38\u0E13\u0E32\u0E01\u0E23\u0E2D\u0E01\u0E0A\u0E37\u0E48\u0E2D\u0E41\u0E25\u0E30\u0E23\u0E32\u0E04\u0E32\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32', 'error');
-                return;
-            }
+	        function cancelProductForm() {
+	            _editingProductId = null;
+	            _pendingImageFile = null;
+	            _pendingImageRemove = false;
+	            document.getElementById('adminProductForm').style.display = 'none';
+	            document.getElementById('adminProductsTab').style.display = 'block';
+	        }
 
-            const productData = {
-                name,
-                description,
-                icon: icon || '\uD83D\uDCE6',
-                icon_bg: iconBg || 'linear-gradient(135deg, #667eea, #764ba2)',
-                price,
-                category,
-                rating,
-                reviews: 0,
-                popular: false
-            };
+	        async function saveProduct() {
+	            const name = document.getElementById('pfName').value.trim();
+	            const category = document.getElementById('pfCategory').value;
+	            const price = parseInt(document.getElementById('pfPrice').value);
+	            const icon = document.getElementById('pfIcon').value.trim();
+	            const iconBg = document.getElementById('pfIconBg').value.trim();
+	            const rating = parseFloat(document.getElementById('pfRating').value) || 0;
+	            const description = document.getElementById('pfDesc').value.trim();
 
-            try {
-                if (_editingProductId) {
-                    const { error } = await supabaseClient.from('products').update(productData).eq('id', _editingProductId);
-                    if (error) throw error;
-                    showToast('\u0E41\u0E01\u0E49\u0E44\u0E02\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08', 'success');
-                } else {
-                    const { error } = await supabaseClient.from('products').insert(productData);
-                    if (error) throw error;
-                    showToast('\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08', 'success');
-                }
-                await loadProducts();
-                cancelProductForm();
-                renderAdminProducts();
-            } catch (e) {
-                showToast('\u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08: ' + e.message, 'error');
-            }
-        }
+	            if (!name || !price) {
+	                showToast('\u0E01\u0E23\u0E38\u0E13\u0E32\u0E01\u0E23\u0E2D\u0E01\u0E0A\u0E37\u0E48\u0E2D\u0E41\u0E25\u0E30\u0E23\u0E32\u0E04\u0E32\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32', 'error');
+	                return;
+	            }
 
-        async function confirmDeleteProduct(id) {
-            if (!confirm('\u0E41\u0E19\u0E48\u0E43\u0E08\u0E27\u0E48\u0E32\u0E15\u0E49\u0E2D\u0E07\u0E01\u0E32\u0E23\u0E25\u0E1A\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E19\u0E35\u0E49?')) return;
-            try {
-                const { error } = await supabaseClient.from('products').delete().eq('id', id);
-                if (error) throw error;
-                showToast('\u0E25\u0E1A\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08', 'success');
-                await loadProducts();
-                renderAdminProducts();
-            } catch (e) {
-                showToast('\u0E25\u0E1A\u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08: ' + e.message, 'error');
-            }
-        }
+	            const productData = {
+	                name,
+	                description,
+	                icon: icon || '\uD83D\uDCE6',
+	                icon_bg: iconBg || 'linear-gradient(135deg, #667eea, #764ba2)',
+	                price,
+	                category,
+	                rating,
+	                reviews: 0,
+	                popular: false
+	            };
+
+	            try {
+	                let productId = _editingProductId;
+
+	                if (_editingProductId) {
+	                    // ── UPDATE existing product ──
+	                    // Handle image remove
+	                    if (_pendingImageRemove) {
+	                        // Get current image_url to delete from storage
+	                        const { data: curr } = await supabaseClient.from('products').select('image_url').eq('id', _editingProductId).single();
+	                        if (curr?.image_url) {
+	                            await deleteStorageImage(curr.image_url);
+	                        }
+	                        productData.image_url = null;
+	                    }
+
+	                    const { error } = await supabaseClient.from('products').update(productData).eq('id', _editingProductId);
+	                    if (error) throw error;
+
+	                    // Upload new image if selected
+	                    if (_pendingImageFile) {
+	                        const publicUrl = await uploadProductImage(_pendingImageFile, _editingProductId);
+	                        if (publicUrl) {
+	                            await supabaseClient.from('products').update({ image_url: publicUrl }).eq('id', _editingProductId);
+	                        }
+	                    }
+
+	                    showToast('\u0E41\u0E01\u0E49\u0E44\u0E02\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08', 'success');
+	                } else {
+	                    // ── INSERT new product ──
+	                    const { data: inserted, error } = await supabaseClient.from('products').insert(productData).select();
+	                    if (error) throw error;
+	                    productId = inserted?.[0]?.id;
+
+	                    // Upload image if selected
+	                    if (_pendingImageFile && productId) {
+	                        const publicUrl = await uploadProductImage(_pendingImageFile, productId);
+	                        if (publicUrl) {
+	                            await supabaseClient.from('products').update({ image_url: publicUrl }).eq('id', productId);
+	                        }
+	                    }
+
+	                    showToast('\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08', 'success');
+	                }
+
+	                _pendingImageFile = null;
+	                _pendingImageRemove = false;
+	                await loadProducts();
+	                cancelProductForm();
+	                renderAdminProducts();
+	            } catch (e) {
+	                showToast('\u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08: ' + e.message, 'error');
+	            }
+	        }
+
+	        async function confirmDeleteProduct(id) {
+	            if (!confirm('\u0E41\u0E19\u0E48\u0E43\u0E08\u0E27\u0E48\u0E32\u0E15\u0E49\u0E2D\u0E07\u0E01\u0E32\u0E23\u0E25\u0E1A\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E19\u0E35\u0E49?')) return;
+	            try {
+	                // Delete image from storage if exists
+	                const { data: product } = await supabaseClient.from('products').select('image_url').eq('id', id).single();
+	                if (product?.image_url) {
+	                    await deleteStorageImage(product.image_url);
+	                }
+
+	                const { error } = await supabaseClient.from('products').delete().eq('id', id);
+	                if (error) throw error;
+	                showToast('\u0E25\u0E1A\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08', 'success');
+	                await loadProducts();
+	                renderAdminProducts();
+	            } catch (e) {
+	                showToast('\u0E25\u0E1A\u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08: ' + e.message, 'error');
+	            }
+	        }
 
         // --- Orders ----------------------------------------------------
 

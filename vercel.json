@@ -3,7 +3,13 @@
   "framework": null,
   "buildCommand": null,
   "outputDirectory": ".",
+  "functions": {
+    "api/config.js": {
+      "runtime": "nodejs@20.x"
+    }
+  },
   "routes": [
+    { "src": "/api/config", "dest": "/api/config" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }

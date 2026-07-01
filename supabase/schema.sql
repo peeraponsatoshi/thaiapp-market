@@ -1,8 +1,6 @@
 -- ================================================================
 -- Thai App Market — Supabase Database Schema
 -- ================================================================
--- วิธีใช้งาน: เปิด Supabase Dashboard → SQL Editor → วางโค้ดนี้ → RUN
--- ================================================================
 
 -- ─── 1. ตาราง Profiles (ต่อจาก Auth.users) ─────────────────────
 CREATE TABLE IF NOT EXISTS public.profiles (
@@ -10,6 +8,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     name TEXT NOT NULL,
     phone TEXT,
     email TEXT,
+    role TEXT DEFAULT 'user',
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -31,13 +30,29 @@ CREATE POLICY "users can insert own profile"
     ON public.profiles FOR INSERT
     WITH CHECK (auth.uid() = id);
 
--- ─── 2. ตาราง Products ────────────────────────────────────────
+-- ─── 2. ฟังก์ชันเช็ค Admin ───────────────────────────────────────
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid() 
+    AND role = 'admin'
+  );
+$$;
+
+-- ─── 3. ตาราง Products ────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.products (
     id BIGSERIAL PRIMARY KEY,
     name TEXT NOT NULL,
     description TEXT,
     icon TEXT DEFAULT '📦',
     icon_bg TEXT DEFAULT 'linear-gradient(135deg, #667eea, #764ba2)',
+    image_url TEXT DEFAULT NULL,
     price DECIMAL(10,2) NOT NULL DEFAULT 0,
     category TEXT,
     rating DECIMAL(2,1) DEFAULT 0,
@@ -53,12 +68,13 @@ CREATE POLICY "products public read"
     ON public.products FOR SELECT
     USING (true);
 
--- เฉพาะ admin แก้ไขได้ (ถ้าต้องการ)
--- CREATE POLICY "admin manage products"
---     ON public.products FOR ALL
---     USING (auth.uid() IN (SELECT id FROM profiles WHERE is_admin = true));
+-- Admin จัดการสินค้าได้
+CREATE POLICY "admin manage products"
+    ON public.products FOR ALL
+    USING (public.is_admin())
+    WITH CHECK (public.is_admin());
 
--- ─── 3. ตาราง Cart Items ──────────────────────────────────────
+-- ─── 4. ตาราง Cart Items ──────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.cart_items (
     id BIGSERIAL PRIMARY KEY,
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
@@ -75,7 +91,7 @@ CREATE POLICY "users own cart items"
     ON public.cart_items FOR ALL
     USING (auth.uid() = user_id);
 
--- ─── 4. ตาราง Orders ──────────────────────────────────────────
+-- ─── 5. ตาราง Orders ──────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.orders (
     id BIGSERIAL PRIMARY KEY,
     order_number TEXT UNIQUE NOT NULL,
@@ -87,7 +103,7 @@ CREATE TABLE IF NOT EXISTS public.orders (
     customer_phone TEXT,
     customer_address TEXT,
     note TEXT,
-    items JSONB, -- เก็บรายการสินค้าตอนสั่งซื้อ (เผื่อสินค้าเปลี่ยนภายหลัง)
+    items JSONB,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -98,7 +114,39 @@ CREATE POLICY "users own orders"
     ON public.orders FOR ALL
     USING (auth.uid() = user_id);
 
--- ─── 5. Seed Data: สินค้าตัวอย่าง (6 รายการ) ──────────────────
+-- Admin จัดการออเดอร์ได้
+CREATE POLICY "admin manage orders"
+    ON public.orders FOR ALL
+    USING (public.is_admin())
+    WITH CHECK (public.is_admin());
+
+-- ─── 6. Trigger: สร้าง Profile อัตโนมัติเมื่อสมัคร ────────────
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO public.profiles (id, name, phone, email, role)
+  VALUES (
+    NEW.id,
+    COALESCE(NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)),
+    NEW.raw_user_meta_data->>'phone',
+    NEW.email,
+    'user'
+  );
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE OR REPLACE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION public.handle_new_user();
+
+-- ─── 7. Seed Data: สินค้าตัวอย่าง (6 รายการ) ──────────────────
 INSERT INTO public.products (name, description, icon, icon_bg, price, category, rating, reviews, popular)
 VALUES
     ('เสียงไทย TTS Pro',
@@ -132,29 +180,43 @@ VALUES
      1999, 'ai', 4.9, 421, false)
 ON CONFLICT DO NOTHING;
 
--- ─── 6. Trigger: สร้าง Profile อัตโนมัติเมื่อสมัคร ────────────
--- (ถ้าต้องการให้สร้าง profile ทันทีที่สมัคร เปิดใช้ trigger นี้)
-/*
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS trigger
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-BEGIN
-    INSERT INTO public.profiles (id, name, phone, email)
-    VALUES (
-        NEW.id,
-        COALESCE(NEW.raw_user_meta_data->>'name', split_part(NEW.email, '@', 1)),
-        NEW.raw_user_meta_data->>'phone',
-        NEW.email
-    );
-    RETURN NEW;
-END;
-$$;
+-- ─── 8. Storage Bucket สำหรับรูปสินค้า ────────────────────────
+-- สร้าง Bucket สำหรับรูปสินค้า (public read)
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'product-images',
+  'product-images',
+  true,
+  5242880, -- 5MB
+  ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif']::text[]
+)
+ON CONFLICT (id) DO NOTHING;
 
-CREATE OR REPLACE TRIGGER on_auth_user_created
-    AFTER INSERT ON auth.users
-    FOR EACH ROW
-    EXECUTE FUNCTION public.handle_new_user();
-*/
+-- ให้ทุกคนอ่านรูปได้
+CREATE POLICY "public read product images"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'product-images');
+
+-- ให้ user ที่ login แล้ว (admin) อัปโหลดรูปได้
+CREATE POLICY "auth users upload product images"
+  ON storage.objects FOR INSERT
+  WITH CHECK (
+    bucket_id = 'product-images' 
+    AND auth.role() = 'authenticated'
+  );
+
+-- ให้ user ที่ login แล้ว (admin) อัปเดตรูปได้
+CREATE POLICY "auth users update product images"
+  ON storage.objects FOR UPDATE
+  USING (
+    bucket_id = 'product-images' 
+    AND auth.role() = 'authenticated'
+  );
+
+-- ให้ user ที่ login แล้ว (admin) ลบรูปได้
+CREATE POLICY "auth users delete product images"
+  ON storage.objects FOR DELETE
+  USING (
+    bucket_id = 'product-images' 
+    AND auth.role() = 'authenticated'
+  );
