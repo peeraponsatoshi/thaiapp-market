@@ -1481,6 +1481,87 @@
         }
         .image-remove-btn:hover { background: var(--crimson-dark); transform: scale(1.1); }
 
+        /* --- Emoji Picker --- */
+        .emoji-preview {
+            width: 42px; height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            background: var(--cream);
+            flex-shrink: 0;
+            border: 1px solid var(--cream-dark);
+        }
+        .emoji-presets {
+            display: flex;
+            gap: 4px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+        }
+        .emoji-presets span {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            background: var(--cream);
+            transition: var(--transition);
+            border: 2px solid transparent;
+        }
+        .emoji-presets span:hover {
+            transform: scale(1.15);
+            border-color: var(--gold);
+        }
+
+        /* --- Gradient Presets --- */
+        .gradient-presets {
+            display: flex;
+            gap: 4px;
+            margin-top: 6px;
+            flex-wrap: wrap;
+        }
+        .gradient-preset {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid transparent;
+            flex-shrink: 0;
+        }
+        .gradient-preset:hover {
+            transform: scale(1.15);
+            border-color: var(--gold);
+        }
+        .gradient-preset.active {
+            border-color: var(--crimson);
+            box-shadow: 0 0 0 2px white, 0 0 0 4px var(--crimson);
+        }
+
+        /* --- Combined Fallback Preview --- */
+        .fallback-preview-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .fallback-preview-box {
+            width: 56px; height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            border: 1px solid var(--cream-dark);
+        }
+        .fallback-preview-label {
+            font-size: .8rem;
+            color: var(--text-muted);
+        }
+
         @media (max-width:768px) { .admin-modal .modal { max-width:100% !important;padding:20px 16px; } .admin-table { font-size:.8rem; } .admin-table th,.admin-table td { padding:8px 6px; } .product-form-grid { grid-template-columns:1fr; } }
 
     </style>
@@ -1965,8 +2046,43 @@
 	                            <button type="button" class="image-remove-btn" id="pfImageRemove" style="display:none;" onclick="removeProductImage()" title="ลบรูป">×</button>
 	                        </div>
 	                    </div>
-	                    <div class="form-group"><label>Emoji Fallback</label><input type="text" id="pfIcon" placeholder="เช่น 🎙️ (ใช้เมื่อไม่มีรูป)"></div>
-	                    <div class="form-group"><label>Gradient BG</label><input type="text" id="pfIconBg" placeholder="linear-gradient(...)"></div>
+		                    <div class="form-group full-width">
+		                        <label>ตัวอย่าง Emoji + Gradient</label>
+		                        <div class="fallback-preview-row">
+		                            <div class="fallback-preview-box" id="pfCombinedPreview">🎙️</div>
+		                            <div>
+		                                <div class="fallback-preview-label">แสดงเมื่อไม่มีรูปสินค้า</div>
+		                                <small style="color:var(--text-muted);">พิมพ์ Emoji หรือเลือก Gradient ด้านล่าง</small>
+		                            </div>
+		                        </div>
+		                    </div>
+		                    <div class="form-group"><label>Emoji Fallback</label>
+		                        <div style="display:flex;gap:8px;align-items:center;">
+		                            <input type="text" id="pfIcon" placeholder="เช่น 🎙️" style="flex:1;" oninput="updateFallbackPreview()">
+		                            <div class="emoji-preview" id="pfEmojiPreview">🎙️</div>
+		                        </div>
+		                        <div class="emoji-presets">
+		                            <span onclick="pickEmoji('🎙️')">🎙️</span>
+		                            <span onclick="pickEmoji('🎬')">🎬</span>
+		                            <span onclick="pickEmoji('🗣️')">🗣️</span>
+		                            <span onclick="pickEmoji('📝')">📝</span>
+		                            <span onclick="pickEmoji('🛍️')">🛍️</span>
+		                            <span onclick="pickEmoji('🤖')">🤖</span>
+		                            <span onclick="pickEmoji('📦')">📦</span>
+		                            <span onclick="pickEmoji('🎨')">🎨</span>
+		                            <span onclick="pickEmoji('⚡')">⚡</span>
+		                            <span onclick="pickEmoji('🔥')">🔥</span>
+		                            <span onclick="pickEmoji('💎')">💎</span>
+		                            <span onclick="pickEmoji('🌈')">🌈</span>
+		                        </div>
+		                    </div>
+		                    <div class="form-group"><label>Gradient BG</label>
+		                        <div style="display:flex;gap:8px;align-items:center;">
+		                            <input type="text" id="pfIconBg" placeholder="linear-gradient(...)" style="flex:1;" oninput="updateFallbackPreview()">
+		                            <div class="gradient-preview" id="pfGradientPreview" style="width:40px;height:40px;border-radius:8px;flex-shrink:0;border:1px solid var(--cream-dark);"></div>
+		                        </div>
+		                        <div class="gradient-presets" id="pfGradientPresets"></div>
+		                    </div>
 	                    <div class="form-group"><label>Rating</label><input type="number" id="pfRating" placeholder="4.8" step="0.1" min="0" max="5"></div>
 	                    <div class="form-group full-width"><label>รายละเอียด</label><textarea id="pfDesc" placeholder="รายละเอียดสินค้า"></textarea></div>
 	                </div>
@@ -3281,6 +3397,58 @@
 	            }
 	        }
 
+		        // ─── Gradient Presets ──────────────────────────────────
+		        const PRESET_GRADIENTS = [
+		            { name: 'ม่วง-ฟ้า', css: 'linear-gradient(135deg, #667eea, #764ba2)' },
+		            { name: 'ชมพู-ส้ม', css: 'linear-gradient(135deg, #f093fb, #f5576c)' },
+		            { name: 'ฟ้า-เขียว', css: 'linear-gradient(135deg, #4facfe, #00f2fe)' },
+		            { name: 'เขียวสด', css: 'linear-gradient(135deg, #43e97b, #38f9d7)' },
+		            { name: 'ม่วง-ชมพู', css: 'linear-gradient(135deg, #a18cd1, #fbc2eb)' },
+		            { name: 'พีช-ส้ม', css: 'linear-gradient(135deg, #ffecd2, #fcb69f)' },
+		            { name: 'แดงเลือดหมู', css: 'linear-gradient(135deg, #cb2d3e, #ef473a)' },
+		            { name: 'น้ำเงินเข้ม', css: 'linear-gradient(135deg, #0f0c29, #302b63)' },
+		            { name: 'เขียว-เหลือง', css: 'linear-gradient(135deg, #11998e, #38ef7d)' },
+		            { name: 'ส้ม-ทอง', css: 'linear-gradient(135deg, #f2994a, #f2c94e)' },
+		        ];
+
+		        function renderGradientPresets() {
+		            const container = document.getElementById('pfGradientPresets');
+		            if (!container) return;
+		            container.innerHTML = PRESET_GRADIENTS.map(g =>
+		                `<div class="gradient-preset" style="background:${g.css}" title="${g.name}" onclick="pickGradient('${g.css.replace(/'/g, "\\'")}')"></div>`
+		            ).join('');
+		        }
+
+		        function pickGradient(css) {
+		            document.getElementById('pfIconBg').value = css;
+		            updateFallbackPreview();
+		        }
+
+		        function pickEmoji(emoji) {
+		            document.getElementById('pfIcon').value = emoji;
+		            updateFallbackPreview();
+		        }
+
+		        function updateFallbackPreview() {
+		            const icon = document.getElementById('pfIcon').value.trim() || '📦';
+		            const bg = document.getElementById('pfIconBg').value.trim() || 'linear-gradient(135deg, #667eea, #764ba2)';
+
+		            // Emoji preview
+		            const emojiPreview = document.getElementById('pfEmojiPreview');
+		            if (emojiPreview) emojiPreview.textContent = icon;
+
+		            // Gradient preview
+		            const gradPreview = document.getElementById('pfGradientPreview');
+		            if (gradPreview) gradPreview.style.background = bg;
+
+		            // Combined preview (fallback box)
+		            const combined = document.getElementById('pfCombinedPreview');
+		            if (combined) {
+		                combined.textContent = icon;
+		                combined.style.background = bg;
+		            }
+		        }
+
 		        function getProductImageHtml(imageUrl, icon, iconBg) {
 		            if (imageUrl) {
 		                return `<img src="${imageUrl}" alt="" class="app-card-image" loading="lazy">`;
@@ -3364,13 +3532,17 @@
 
         let _editingProductId = null;
 
-	        async function showProductForm(productId) {
+		async function showProductForm(productId) {
 	            _editingProductId = null;
 	            _pendingImageFile = null;
 	            _pendingImageRemove = false;
 	            document.getElementById('adminProductsTab').style.display = 'none';
 	            document.getElementById('adminOrdersTab').style.display = 'none';
 	            document.getElementById('adminProductForm').style.display = 'block';
+
+	            // Initialize gradient presets + fallback preview
+	            renderGradientPresets();
+	            updateFallbackPreview();
 
 	            // Reset image preview
 	            const preview = document.getElementById('pfImagePreview');
@@ -3400,15 +3572,17 @@
 	                        document.getElementById('pfRating').value = data.rating || '';
 	                        document.getElementById('pfDesc').value = data.description || '';
 
-	                        // Show existing image if any
-	                        if (data.image_url) {
-	                            preview.src = data.image_url;
-	                            preview.style.display = 'block';
-	                            placeholder.style.display = 'none';
-	                            area.classList.add('has-image');
-	                            removeBtn.style.display = 'flex';
-	                        }
-	                    }
+		                        // Show existing image if any
+		                        if (data.image_url) {
+		                            preview.src = data.image_url;
+		                            preview.style.display = 'block';
+		                            placeholder.style.display = 'none';
+		                            area.classList.add('has-image');
+		                            removeBtn.style.display = 'flex';
+		                        }
+		                        // Sync fallback preview with loaded data
+		                        updateFallbackPreview();
+		                    }
 	                } catch (e) {
 	                    showToast('\u0E42\u0E2B\u0E25\u0E14\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32\u0E44\u0E21\u0E48\u0E2A\u0E33\u0E40\u0E23\u0E47\u0E08', 'error');
 	                    cancelProductForm();
