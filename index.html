@@ -2083,7 +2083,13 @@
 		                        </div>
 		                        <div class="gradient-presets" id="pfGradientPresets"></div>
 		                    </div>
-	                    <div class="form-group"><label>Rating</label><input type="number" id="pfRating" placeholder="4.8" step="0.1" min="0" max="5"></div>
+		                    <div class="form-group"><label>Rating</label><input type="number" id="pfRating" placeholder="4.8" step="0.1" min="0" max="5"></div>
+		                    <div class="form-group" style="display:flex;align-items:center;gap:8px;padding-top:24px;">
+		                        <label style="margin:0;cursor:pointer;">
+		                            <input type="checkbox" id="pfPopular" style="width:18px;height:18px;cursor:pointer;accent-color:var(--crimson);">
+		                            <span style="margin-left:6px;font-weight:500;">⭐ ยอดนิยม</span>
+		                        </label>
+		                    </div>
 	                    <div class="form-group full-width"><label>รายละเอียด</label><textarea id="pfDesc" placeholder="รายละเอียดสินค้า"></textarea></div>
 	                </div>
                 <div style="display:flex;gap:10px;margin-top:8px;">
@@ -2340,36 +2346,48 @@
         let productsData = [...FALLBACK_PRODUCTS];
 
         // โหลด products จาก Supabase
-        async function loadProducts() {
-            if (!supabaseClient) return;
-            try {
-                const { data, error } = await supabaseClient
-                    .from('products')
-                    .select('*')
-                    .order('id');
-                if (!error && data && data.length > 0) {
-                    productsData = data.map(p => ({
-                        id: p.id,
-                        name: p.name,
-                        desc: p.description,
-                        icon: p.icon,
-                        iconBg: p.icon_bg,
-                        imageUrl: p.image_url,
-                        price: p.price,
-                        category: p.category,
-                        rating: p.rating,
-                        reviews: p.reviews,
-                        popular: p.popular
-                    }));
-                    // Re-render with real data
-                    renderApps(productsData, 'appsGrid');
-                    renderApps(productsData.filter(a => a.popular), 'popularGrid');
-                    console.log('📦 Products loaded from Supabase:', productsData.length);
-                }
-            } catch (e) {
-                console.warn('⚠️ Could not load products from Supabase, using fallback');
-            }
-        }
+	        async function loadProducts() {
+	            if (!supabaseClient) {
+	                // Render fallback products when Supabase is not available
+	                productsData = [...FALLBACK_PRODUCTS];
+	                renderApps(productsData, 'appsGrid');
+	                renderApps(productsData.filter(a => a.popular), 'popularGrid');
+	                return;
+	            }
+	            try {
+	                const { data, error } = await supabaseClient
+	                    .from('products')
+	                    .select('*')
+	                    .order('id');
+	                if (!error && data && data.length > 0) {
+	                    productsData = data.map(p => ({
+	                        id: p.id,
+	                        name: p.name,
+	                        desc: p.description,
+	                        icon: p.icon,
+	                        iconBg: p.icon_bg,
+	                        imageUrl: p.image_url,
+	                        price: p.price,
+	                        category: p.category,
+	                        rating: p.rating,
+	                        reviews: p.reviews,
+	                        popular: p.popular
+	                    }));
+	                } else {
+	                    // No data from Supabase, use fallback
+	                    productsData = [...FALLBACK_PRODUCTS];
+	                }
+	                // Always render (whether from Supabase or fallback)
+	                renderApps(productsData, 'appsGrid');
+	                renderApps(productsData.filter(a => a.popular), 'popularGrid');
+	                console.log('📦 Products loaded:', productsData.length);
+	            } catch (e) {
+	                console.warn('⚠️ Could not load products from Supabase, using fallback');
+	                productsData = [...FALLBACK_PRODUCTS];
+	                renderApps(productsData, 'appsGrid');
+	                renderApps(productsData.filter(a => a.popular), 'popularGrid');
+	            }
+	        }
 
         const testimonialsData = [
             { name: 'พิมพ์ชนก ก.', role: 'ครีเอเตอร์สายทำคลิป', text: 'ใช้เสียงไทย TTS Pro กับคลิปโปร AI คู่กันคือปังมาก! ประหยัดเวลาเป็นวัน ตอนนี้รายได้เพิ่มขึ้นเท่าตัวเลย' },
@@ -3569,8 +3587,9 @@
 	                        document.getElementById('pfPrice').value = data.price || '';
 	                        document.getElementById('pfIcon').value = data.icon || '';
 	                        document.getElementById('pfIconBg').value = data.icon_bg || '';
-	                        document.getElementById('pfRating').value = data.rating || '';
-	                        document.getElementById('pfDesc').value = data.description || '';
+		                        document.getElementById('pfRating').value = data.rating || '';
+		                        document.getElementById('pfDesc').value = data.description || '';
+		                        document.getElementById('pfPopular').checked = !!data.popular;
 
 		                        // Show existing image if any
 		                        if (data.image_url) {
@@ -3594,8 +3613,9 @@
 	                document.getElementById('pfPrice').value = '';
 	                document.getElementById('pfIcon').value = '';
 	                document.getElementById('pfIconBg').value = '';
-	                document.getElementById('pfRating').value = '';
-	                document.getElementById('pfDesc').value = '';
+		                document.getElementById('pfRating').value = '';
+		                document.getElementById('pfDesc').value = '';
+		                document.getElementById('pfPopular').checked = false;
 	            }
 	        }
 
@@ -3615,6 +3635,7 @@
 	            const iconBg = document.getElementById('pfIconBg').value.trim();
 	            const rating = parseFloat(document.getElementById('pfRating').value) || 0;
 	            const description = document.getElementById('pfDesc').value.trim();
+	            const popular = document.getElementById('pfPopular').checked;
 
 	            if (!name || !price) {
 	                showToast('\u0E01\u0E23\u0E38\u0E13\u0E32\u0E01\u0E23\u0E2D\u0E01\u0E0A\u0E37\u0E48\u0E2D\u0E41\u0E25\u0E30\u0E23\u0E32\u0E04\u0E32\u0E2A\u0E34\u0E19\u0E04\u0E49\u0E32', 'error');
@@ -3630,7 +3651,7 @@
 	                category,
 	                rating,
 	                reviews: 0,
-	                popular: false
+	                popular
 	            };
 
 	            try {
