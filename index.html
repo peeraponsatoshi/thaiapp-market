@@ -4,6 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thai App Market - ตลาดแอปไทย</title>
+    <meta name="description" content="ตลาดแอปไทย รวมเครื่องมือ AI คุณภาพสูง สำหรับครีเอเตอร์ไทยโดยเฉพาะ เสียงไทย TTS, คลิปโปร AI, VoiceClone และอีกมากมาย">
+    <meta name="keywords" content="AI, TTS, ไทย, แอป, ตัดต่อคลิป, เสียงสังเคราะห์, ครีเอเตอร์">
+    <meta name="author" content="ThaiApp Market">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://thaiapp-market.vercel.app/">
+    <meta property="og:title" content="Thai App Market - ตลาดแอปไทย">
+    <meta property="og:description" content="รวมเครื่องมือ AI คุณภาพสูง สำหรับครีเอเตอร์ไทยโดยเฉพาะ">
+    <meta property="og:image" content="https://thaiapp-market.vercel.app/og-image.png">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Thai App Market - ตลาดแอปไทย">
+    <meta name="twitter:description" content="รวมเครื่องมือ AI คุณภาพสูง สำหรับครีเอเตอร์ไทยโดยเฉพาะ">
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Thai App Market",
+        "description": "ตลาดแอปไทย รวมเครื่องมือ AI สำหรับครีเอเตอร์",
+        "url": "https://thaiapp-market.vercel.app/",
+        "inLanguage": "th-TH"
+    }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -578,6 +606,29 @@
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 24px;
         }
+
+        /* Skeleton Loading */
+        .skeleton-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px; }
+        .skeleton-card { background:white;border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);border:1px solid var(--cream-dark); }
+        .skeleton-icon { width:56px;height:56px;border-radius:14px;background:var(--cream);margin-bottom:16px;animation:skeletonPulse 1.5s infinite; }
+        .skeleton-line { height:14px;background:var(--cream);border-radius:4px;margin-bottom:10px;animation:skeletonPulse 1.5s infinite; }
+        .skeleton-line.short { width:60%; }
+        .skeleton-line.medium { width:80%; }
+        .skeleton-line.long { width:100%; }
+        .skeleton-price { height:24px;width:120px;background:var(--cream);border-radius:4px;margin-top:16px;animation:skeletonPulse 1.5s infinite; }
+        @keyframes skeletonPulse { 0%{opacity:1;} 50%{opacity:0.4;} 100%{opacity:1;} }
+
+        /* Search + Filter Bar */
+        .search-filter-bar { display:flex;flex-direction:column;gap:12px; }
+        .search-box { display:flex;align-items:center;gap:10px;background:white;border:2px solid var(--cream-dark);border-radius:50px;padding:8px 18px;transition:var(--transition); }
+        .search-box:focus-within { border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,160,23,.1); }
+        .search-box i { color:var(--text-muted);font-size:.9rem; }
+        .search-box input { flex:1;border:none;outline:none;font-family:var(--font-body);font-size:.95rem;color:var(--text-dark);background:transparent; }
+        .search-box input::placeholder { color:var(--text-muted);opacity:.6; }
+        .filter-tabs { display:flex;gap:6px;flex-wrap:wrap; }
+        .filter-tab { padding:6px 14px;border:1px solid var(--cream-dark);border-radius:50px;background:white;font-family:var(--font-body);font-size:.82rem;color:var(--text-muted);cursor:pointer;transition:var(--transition); }
+        .filter-tab:hover { border-color:var(--gold);color:var(--gold-dark); }
+        .filter-tab.active { background:var(--gold);border-color:var(--gold);color:var(--navy);font-weight:600; }
 
         .app-card {
             background: white;
@@ -1658,14 +1709,37 @@
             <h2 class="section-title reveal">🔥 แอปแนะนำ</h2>
             <p class="section-subtitle reveal reveal-delay-1">เครื่องมือ AI คุณภาพสูง สำหรับครีเอเตอร์ไทยโดยเฉพาะ</p>
 
-            <div class="thai-divider reveal reveal-delay-1" style="margin-bottom: 40px;">
-                <span class="diamond-small"></span>
-                <span class="diamond"></span>
-                <span class="diamond-small"></span>
-            </div>
+	            <div class="thai-divider reveal reveal-delay-1" style="margin-bottom: 12px;">
+	                <span class="diamond-small"></span>
+	                <span class="diamond"></span>
+	                <span class="diamond-small"></span>
+	            </div>
 
-            <div class="apps-grid" id="appsGrid">
-                <!-- Apps will be rendered by JS -->
+	            <!-- Search + Filter Bar -->
+	            <div class="search-filter-bar reveal reveal-delay-2" style="margin-bottom: 28px;">
+	                <div class="search-box">
+	                    <i class="fas fa-search"></i>
+	                    <input type="text" id="searchInput" placeholder="ค้นหาสินค้า..." oninput="filterProducts()">
+	                </div>
+	                <div class="filter-tabs" id="filterTabs">
+	                    <button class="filter-tab active" data-cat="" onclick="setCategory('')">ทั้งหมด</button>
+	                    <button class="filter-tab" data-cat="tts" onclick="setCategory('tts')">🎤 TTS</button>
+	                    <button class="filter-tab" data-cat="video" onclick="setCategory('video')">🎬 คลิป</button>
+	                    <button class="filter-tab" data-cat="ai" onclick="setCategory('ai')">🤖 AI</button>
+	                    <button class="filter-tab" data-cat="subtitle" onclick="setCategory('subtitle')">📝 ซับ</button>
+	                    <button class="filter-tab" data-cat="tiktok" onclick="setCategory('tiktok')">🛍️ TikTok</button>
+	                </div>
+	            </div>
+
+	            <div class="apps-grid" id="appsGrid">
+                <div class="skeleton-grid" id="appsSkeleton">
+                    <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-line long"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div><div class="skeleton-price"></div></div>
+                    <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-line long"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div><div class="skeleton-price"></div></div>
+                    <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-line long"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div><div class="skeleton-price"></div></div>
+                    <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-line long"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div><div class="skeleton-price"></div></div>
+                    <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-line long"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div><div class="skeleton-price"></div></div>
+                    <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-line long"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div><div class="skeleton-price"></div></div>
+                </div>
             </div>
         </div>
     </section>
@@ -1728,7 +1802,11 @@
             </div>
 
             <div class="apps-grid" id="popularGrid">
-                <!-- Popular apps will be rendered by JS -->
+                <div class="skeleton-grid">
+                    <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-line long"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div><div class="skeleton-price"></div></div>
+                    <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-line long"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div><div class="skeleton-price"></div></div>
+                    <div class="skeleton-card"><div class="skeleton-icon"></div><div class="skeleton-line long"></div><div class="skeleton-line medium"></div><div class="skeleton-line short"></div><div class="skeleton-price"></div></div>
+                </div>
             </div>
         </div>
     </section>
@@ -2344,6 +2422,8 @@
 
         // Products data (โหลดจาก Supabase ถ้าไม่ได้ใช้ fallback)
         let productsData = [...FALLBACK_PRODUCTS];
+        let _searchQuery = '';
+        let _searchCategory = '';
 
         // โหลด products จาก Supabase
 	        async function loadProducts() {
@@ -2538,6 +2618,41 @@
             // Scroll to apps
             document.getElementById('appsGrid').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
+
+        // ─── Search + Category Filter ────────────────────────────
+        function filterProducts() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            _searchQuery = query;
+            applyFilters();
+        }
+
+        function setCategory(cat) {
+            _searchCategory = cat;
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.filter-tab[data-cat="${cat}"]`)?.classList.add('active');
+            applyFilters();
+        }
+
+        function applyFilters() {
+            let filtered = [...productsData];
+            if (_searchCategory) {
+                filtered = filtered.filter(p => p.category === _searchCategory);
+            }
+            if (_searchQuery) {
+                filtered = filtered.filter(p =>
+                    p.name.toLowerCase().includes(_searchQuery) ||
+                    (p.desc && p.desc.toLowerCase().includes(_searchQuery))
+                );
+            }
+            renderApps(filtered, 'appsGrid');
+        }
+
+        // Override loadProducts to re-apply filters after reload
+        const _origLoadProducts = loadProducts;
+        loadProducts = async function() {
+            await _origLoadProducts();
+            if (_searchQuery || _searchCategory) applyFilters();
+        };
 
         // ============================================================
         // TESTIMONIALS
